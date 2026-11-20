@@ -1,0 +1,24 @@
+.sd-sheet {
+  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-panel);
+  transform: translateY(calc(100% + 110px)); opacity: 0; visibility: hidden;
+  transition: transform var(--sd-settle) var(--sd-spring), opacity var(--sd-med) var(--sd-out), visibility 0s linear var(--sd-settle);
+}
+.sd-sheet.is-open {
+  transform: translateY(var(--drag, 0px)); opacity: 1; visibility: visible;
+  transition: transform var(--sd-settle) var(--sd-spring), opacity var(--sd-med) var(--sd-out), visibility 0s linear 0s;
+}
+/* Follow the finger 1:1 while dragging; spring only on release. */
+.sd-sheet.is-dragging { transition: none; }
+
+.sd-sheet-grab {
+  display: grid; place-items: center; width: 100%; height: 24px; padding: 0;
+  border: 0; background: transparent; cursor: grab; touch-action: none;
+}
+.sd-sheet-grab::before {
+  content: ""; width: 36px; height: 4px; border-radius: 999px; background: #d9d9d9;
+  transition: width var(--sd-med) var(--sd-out), background-color var(--sd-fast);
+}
+.sd-sheet-grab:hover::before, .sd-sheet.is-dragging .sd-sheet-grab::before { width: 48px; background: #bdbdbd; }
+
+.sd-sheet-body { padding: 0 0 4px; animation: sd-swap var(--sd-slow) var(--sd-out); }
+.sd-sheet-body .sd-sec { padding-top: 4px; }

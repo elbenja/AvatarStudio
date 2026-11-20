@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar Studio — v0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#161618;--muted:#8a8a90;--line:rgba(0,0,0,.06);--blue:#2f8cff}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:#ececec;font-family:Inter,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;overflow:hidden}
+  button{font:inherit;color:inherit;cursor:pointer}
+  button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .card{position:absolute;inset:24px;border-radius:28px;background:#f6f6f6;box-shadow:0 40px 80px -30px rgba(0,0,0,.18),0 0 0 1px rgba(0,0,0,.03);overflow:hidden}
+  #stage{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;touch-action:none;cursor:grab;display:block}
+  #stage.dragging{cursor:grabbing}
+  .pill{background:#fff;border-radius:18px;box-shadow:0 1px 2px rgba(0,0,0,.05),0 0 0 1px var(--line)}
+  /* top */
+  .logo{position:absolute;top:16px;left:16px;width:58px;height:58px;display:grid;place-items:center}
+  .logo i{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffb37a,#ff6a1a 60%,#ff4d00);filter:blur(1.2px);box-shadow:0 0 18px rgba(255,106,26,.35)}
+  .toolbar{position:absolute;top:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;padding:6px}
+  .tb{display:flex;align-items:center;gap:8px;border:0;background:none;padding:10px 13px;border-radius:12px;font-size:15px;white-space:nowrap}
+  .tb:hover{background:#f4f4f5}
+  .tb svg{width:18px;height:18px}
+  .tb.primary{background:#ececee;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 1px 0 #fff;font-weight:500;padding:10px 22px;margin-left:6px}
+  .tb.primary:hover{background:#e4e4e6}
+  .tb[disabled]{opacity:.45;cursor:default}
+  .who{position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:10px;padding:8px 16px 8px 8px;font-size:15px}
+  .who .dot{width:40px;height:40px;border-radius:50%;overflow:hidden;background:#eee}
+  .who .dot img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+  .who small{color:var(--muted);font-size:13px;display:block}
+  /* side rail */
+  .rail{position:absolute;left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px;padding:8px}
+  .ib{width:46px;height:46px;border:0;border-radius:13px;background:none;display:grid;place-items:center}
+  .ib svg{width:20px;height:20px}
+  .ib:hover{background:#f4f4f5}
+  .ib[aria-pressed=true]{background:#f1f1f2;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06),0 1px 0 #fff}
+  /* sliders */
+  .panel{position:absolute;right:28px;top:50%;transform:translateY(-58%);width:250px;padding:18px 18px 8px;border-radius:22px}
+  .panel label{display:block;font-size:14px;margin-bottom:10px}
+  .panel label span{float:right;color:var(--muted);font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:46px;border-radius:11px;margin:0 0 18px;background:linear-gradient(to right,#f1f1f2 0,#f1f1f2 calc(var(--p) - 50px),var(--blue) calc(var(--p) - 50px),var(--blue) var(--p),#f1f1f2 var(--p));box-shadow:inset 0 0 0 1px rgba(0,0,0,.05)}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:46px;border-radius:7px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+  input[type=range]::-moz-range-thumb{width:12px;height:46px;border:0;border-radius:7px;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+  /* bottom tray */
+  .tray{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);display:flex;gap:18px;padding:14px 16px 16px;border-radius:22px;max-width:calc(100% - 36px);overflow-x:auto}
+  .sec h4{margin:0 0 9px;font-size:14px;font-weight:500}
+  .sec h4 em{font-style:normal;color:var(--muted);font-weight:400}
+  .row{display:flex;gap:8px}
+  .thumb{width:88px;height:108px;border-radius:15px;border:1px solid #ececec;background:#fafafa;padding:0;overflow:hidden;position:relative}
+  .thumb img{width:100%;height:100%;object-fit:cover}
+  .thumb[aria-pressed=true]{box-shadow:0 0 0 2px var(--ink)}
+  .thumb b{position:absolute;left:6px;bottom:5px;font-size:11px;font-weight:500;background:rgba(255,255,255,.85);padding:2px 6px;border-radius:6px}
+  .grid{display:grid;grid-template-columns:repeat(4,48px);gap:6px;padding:6px;border:1px solid #ececec;border-radius:15px}
+  .eb{width:48px;height:46px;border:0;border-radius:11px;background:#f3f3f4;display:grid;place-items:center;padding:0}
+  .eb canvas{width:40px;height:28px}
+  .eb[aria-pressed=true]{background:#1d1d1f}
+  .eb[aria-pressed=true] canvas{filter:invert(1) hue-rotate(180deg)}
+  .motion{display:flex;flex-direction:column;gap:6px;padding:6px;border:1px solid #ececec;border-radius:15px}
+  .mb{width:98px;height:46px;border:0;border-radius:11px;background:#f3f3f4;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:14px}
+  .mb svg{width:18px;height:18px}
+  .mb[aria-pressed=true]{background:#1d1d1f;color:#fff}
+  /* status */
+  .toast{position:absolute;top:84px;left:50%;transform:translateX(-50%) translateY(-6px);opacity:0;transition:.25s;padding:10px 16px;font-size:14px;pointer-events:none;display:flex;align-items:center;gap:10px}
+  .toast.on{opacity:1;transform:translateX(-50%)}
+  .rec{width:10px;height:10px;border-radius:50%;background:#ff3b30;display:none}
+  .toast.recording .rec{display:block;animation:pulse 1s infinite}
+  @keyframes pulse{50%{opacity:.3}}
+  .hint{margin:-4px 0 10px;font-size:12px;color:var(--muted)}
+  @media (max-width:900px){.panel,.rail,.who{display:none}.toolbar{left:84px;transform:none;overflow-x:auto;max-width:calc(100% - 100px)}.card{inset:8px}}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none}.toast.recording .rec{animation:none}}
+</style>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}
+</script>
+</head>
+<body>
+<main class="card" id="card">
+  <canvas id="stage" aria-label="3D character preview. Drag to rotate, tap to jump."></canvas>
+
+  <div class="logo pill" aria-hidden="true"><i></i></div>
+
+  <div class="toolbar pill" role="toolbar" aria-label="Export settings">
+    <button class="tb" id="tRes" title="Resolution"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9" stroke-dasharray="3 2.2"/><path d="M10 8.5v7l5.5-3.5z" fill="currentColor"/></svg><span>1080p</span></button>
+    <button class="tb" id="tRatio" title="Aspect ratio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M9 15.5l3-7 3 7M10.2 13h3.6"/></svg><span>2:3</span></button>
+    <button class="tb" id="tDur" title="Clip length"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a9 9 0 1 1-6.4 2.6"/><path d="M12 7.5V12l3 2"/><path d="M5.6 2.8v3h3"/></svg><span>5s</span></button>
+    <button class="tb" id="tPng" title="Download a transparent PNG"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.8"/><path d="M20.5 15l-5-5-11 10.5"/></svg><span>PNG</span></button>
+    <button class="tb primary" id="tExport">Export</button>
+  </div>
+
+  <div class="who pill" aria-live="polite"><div class="dot"><img id="whoImg" alt=""></div><div><span id="whoName">Glace</span><small id="whoTag">Montréal · hockey</small></div></div>
+
+  <nav class="rail pill" aria-label="Camera angle">
+    <button class="ib" data-yaw="0" title="Front" aria-label="Front view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="3.5"/><path d="M5.5 20c.8-3.6 3.3-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/></svg></button>
+    <button class="ib" data-yaw="-35" title="Three-quarter" aria-label="Three-quarter view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/></svg></button>
+    <button class="ib" data-yaw="-90" title="Side" aria-label="Side view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 4.5c3 .5 5 3 5 6.2 0 2-1 3.5-2.4 4.5v4.3H9.5V16"/><path d="M14 4.5C10 4 6.5 6.6 6.5 10.6c0 1 .2 1.8.5 2.6L5 15.5h3"/></svg></button>
+  </nav>
+
+  <section class="panel pill" aria-label="Motion settings">
+    <label for="sSpeed">Speed <span id="vSpeed">1.0×</span></label>
+    <input type="range" id="sSpeed" min="0.2" max="2" step="0.05" value="1">
+    <label for="sBounce">Bounce <span id="vBounce">1.0</span></label>
+    <input type="range" id="sBounce" min="0" max="2" step="0.05" value="1">
+    <label for="sTurn">Turn <span id="vTurn">-35°</span></label>
+    <input type="range" id="sTurn" min="-180" max="180" step="1" value="-35">
+    <p class="hint">Drag the character to rotate · tap to jump</p>
+  </section>
+
+
+  <section class="tray pill" aria-label="Character controls">
+    <div class="sec"><h4>Character</h4><div class="row" id="chars"></div></div>
+    <div class="sec"><h4>Emotion <em id="emoName">· Happy</em></h4><div class="grid" id="emos"></div></div>
+    <div class="sec"><h4>Motion</h4><div class="motion" id="motions">
+      <button class="mb" data-m="idle" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="5" r="2.2"/><path d="M12 8v7M8 11h8M10 21l2-6 2 6"/></svg>Idle</button>
+      <button class="mb" data-m="walk" aria-pressed="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="4.5" r="2.2"/><path d="M12.5 8l-2 6 3 3v4M10.5 14L8 21M12 9l4 3M11.5 9.5L7.5 12"/></svg>Walk</button>
+    </div></div>
+  </section>
+
+  <div class="toast pill" id="toast" role="status" aria-live="polite"><span class="rec"></span><span id="toastText"></span></div>
+</main>
+
+<script type="module">
+import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const TAU = Math.PI * 2;
+const $ = (id) => document.getElementById(id);
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- renderer / scene ---------- */
+const canvas = $('stage'), card = $('card');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+const scene = new THREE.Scene();
+const BG = new THREE.Color('#f6f6f6');
+scene.background = BG;
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.75;
+scene.add(new THREE.HemisphereLight(0xffffff, 0xdedee6, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 1.7); key.position.set(-3, 5, 4); scene.add(key);
+const rim = new THREE.DirectionalLight(0xfff1e0, 1.1); rim.position.set(3.5, 3, -4); scene.add(rim);
+const camera = new THREE.PerspectiveCamera(28, 1, 0.1, 50);
+
+// soft contact shadow
+const shadowTex = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 128;
+  const g = c.getContext('2d'), r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, 'rgba(0,0,0,.55)'); r.addColorStop(.55, 'rgba(0,0,0,.18)'); r.addColorStop(1, 'rgba(0,0,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128);
+  return new THREE.CanvasTexture(c);
+})();
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.25), new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false, toneMapped: false }));
+shadow.rotation.x = -Math.PI / 2; shadow.position.y = 0.002; scene.add(shadow);
+
+/* ---------- materials & helpers ---------- */
+const fabric = (color, o = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.78, sheen: 0.7, sheenRoughness: 0.55, sheenColor: new THREE.Color('#ffffff'), ...o });
+const nylon = (color) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.42, clearcoat: 0.35, clearcoatRoughness: 0.4, sheen: 0.4, sheenColor: new THREE.Color('#ffffff') });
+const vinyl = (color, o = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.18, ...o });
+function M(geo, mat, p = [0, 0, 0], s = [1, 1, 1], r = [0, 0, 0]) {
+  const m = new THREE.Mesh(geo, mat); m.position.set(...p); m.scale.set(...s); m.rotation.set(...r); return m;
+}
+const sph = (r, w = 40, h = 28) => new THREE.SphereGeometry(r, w, h);
+const ring = (R, t) => new THREE.TorusGeometry(R, t, 18, 64).rotateX(Math.PI / 2); // horizontal
+const cap = (r, l) => new THREE.CapsuleGeometry(r, l, 10, 20);
+
+// shell-texture fur
+const FUR = (() => {
+  const s = 128, d = new Uint8Array(s * s * 4);
+  for (let i = 0; i < s * s; i++) { const v = Math.random() * 255; d[i * 4] = d[i * 4 + 1] = d[i * 4 + 2] = v; d[i * 4 + 3] = 255; }
+  const t = new THREE.DataTexture(d, s, s); t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = t.minFilter = THREE.NearestFilter; t.needsUpdate = true; return t;
+})();
+function furry(geo, color, o = {}) {
+  const g = new THREE.Group(), len = o.len ?? 0.055, n = o.layers ?? 16, rep = o.repeat ?? [18, 9];
+  const base = new THREE.Color(color);
+  g.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: base.clone().multiplyScalar(0.7), roughness: 1 })));
+  for (let i = 1; i <= n; i++) {
+    const f = i / n;
+    const mat = new THREE.MeshStandardMaterial({ color: base.clone().multiplyScalar(0.7 + 0.38 * f), roughness: 1 });
+    const u = { uOff: { value: len * f }, uDroop: { value: len * 0.5 * f * f }, uThr: { value: 0.08 + 0.9 * Math.pow(f, 0.85) },
+      uFur: { value: FUR }, uRep: { value: new THREE.Vector2(...rep) }, uFace: { value: o.face ? 1 : 0 } };
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, u);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nuniform float uOff; uniform float uDroop; uniform float uFace; varying vec2 vFurUv;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nfloat fm = 1.0 - uFace * smoothstep(0.3, 0.72, normal.z) * 0.85;\ntransformed += normal * uOff * fm; transformed.y -= uDroop * fm; vFurUv = uv;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', '#include <common>\nuniform sampler2D uFur; uniform float uThr; uniform vec2 uRep; varying vec2 vFurUv;')
+        .replace('#include <clipping_planes_fragment>', '#include <clipping_planes_fragment>\nif (texture2D(uFur, vFurUv * uRep).r < uThr) discard;');
+    };
+    const m = new THREE.Mesh(geo, mat); m.renderOrder = i; g.add(m);
+  }
+  return g;
+}
+
+/* ---------- faces (canvas-drawn decals) ---------- */
+const EMOTIONS = ['happy', 'euphoric', 'surprised', 'curious', 'sleepy', 'sad', 'embarrassed', 'angry'];
+const EMO = {
+  happy:       { eye: 'dot',     mouth: 'smile', blush: .35 },
+  euphoric:    { eye: 'arc',     mouth: 'open',  blush: .55, extra: 'sparkle' },
+  surprised:   { eye: 'big',     mouth: 'o',     brow: 'up' },
+  curious:     { eye: 'look',    mouth: 'side',  brow: 'quirk' },
+  sleepy:      { eye: 'closed',  mouth: 'small', extra: 'z' },
+  sad:         { eye: 'dot',     mouth: 'frown', brow: 'sad', extra: 'tear' },
+  embarrassed: { eye: 'squeeze', mouth: 'wavy',  blush: .95, extra: 'sweat' },
+  angry:       { eye: 'squint',  mouth: 'grr',   brow: 'angry' },
+};
+const FW = 768, FH = 576;
+function drawFace(ctx, em, st, blink = false) {
+  const E = EMO[em]; ctx.clearRect(0, 0, FW, FH); ctx.save();
+  const cx = FW / 2, ey = FH * st.eyeY, my = FH * st.mouthY, g = st.gap, rx = st.er, ry = st.er * (st.tall || 1.25);
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.lineWidth = st.lw;
+  const bl = E.blush || 0;
+  if (bl) for (const s of [-1, 1]) {
+    const x = cx + s * (g + 34), y = ey + ry * 1.55;
+    if (st.glow) {
+      ctx.save(); ctx.strokeStyle = '#ff8fbf'; ctx.shadowColor = '#ff6fae'; ctx.shadowBlur = 16; ctx.lineWidth = 9; ctx.globalAlpha = .45 + bl * .5;
+      for (let i = -1; i <= 1; i++) { ctx.beginPath(); ctx.moveTo(x + i * 24 - 7, y + 9); ctx.lineTo(x + i * 24 + 7, y - 9); ctx.stroke(); }
+      ctx.restore();
+    } else {
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, 78);
+      gr.addColorStop(0, `rgba(${st.blush},${bl})`); gr.addColorStop(1, `rgba(${st.blush},0)`);
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(x, y, 82, 50, 0, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.fillStyle = ctx.strokeStyle = st.ink;
+  if (st.whiskers) {
+    ctx.save(); ctx.lineWidth = 4; ctx.globalAlpha = .45;
+    for (const s of [-1, 1]) for (const k of [-1, 0, 1]) {
+      const x0 = cx + s * 92, y0 = my - 34 + k * 17;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + s * 120, y0 + k * 20 - 8); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  if (st.glow) { ctx.shadowColor = st.ink; ctx.shadowBlur = 24; }
+  let type = E.eye;
+  if (blink && ['dot', 'big', 'look', 'squint'].includes(type)) type = 'blink';
+  for (const s of [-1, 1]) drawEye(ctx, type, cx + s * g, ey, rx, ry, s, st);
+  if (E.brow && st.brows) for (const s of [-1, 1]) drawBrow(ctx, E.brow, cx + s * g, ey, rx, ry, s, st);
+  drawMouth(ctx, E.mouth, cx, my, st);
+  drawExtra(ctx, E.extra, cx, ey, g, rx, ry, st);
+  ctx.restore();
+}
+function hl(ctx, x, y, r) { ctx.save(); ctx.shadowBlur = 0; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill(); ctx.restore(); }
+function drawEye(ctx, type, x, y, rx, ry, s, st) {
+  ctx.beginPath();
+  switch (type) {
+    case 'dot': case 'big': case 'look': {
+      const k = type === 'big' ? 1.3 : 1, dx = type === 'look' ? rx * .5 : 0, dy = type === 'look' ? -ry * .12 : 0;
+      ctx.ellipse(x + dx, y + dy, rx * k, ry * k, 0, 0, TAU); ctx.fill();
+      if (!st.glow) { hl(ctx, x + dx - rx * k * .3, y + dy - ry * k * .36, rx * k * .34); hl(ctx, x + dx + rx * k * .3, y + dy + ry * k * .38, rx * k * .13); }
+      break;
+    }
+    case 'squint': {
+      ctx.save(); ctx.beginPath();
+      ctx.moveTo(x + s * rx * 1.6, y - ry * 1.05); ctx.lineTo(x - s * rx * 1.6, y - ry * .05);
+      ctx.lineTo(x - s * rx * 1.6, y + ry * 2); ctx.lineTo(x + s * rx * 1.6, y + ry * 2); ctx.closePath(); ctx.clip();
+      ctx.beginPath(); ctx.ellipse(x, y, rx, ry, 0, 0, TAU); ctx.fill(); ctx.restore();
+      if (!st.glow) hl(ctx, x - rx * .25, y + ry * .2, rx * .24);
+      break;
+    }
+    case 'arc': ctx.arc(x, y + ry * .4, rx * 1.05, Math.PI * 1.12, Math.PI * 1.88); ctx.stroke(); break;
+    case 'closed': ctx.arc(x, y - ry * .55, rx * 1.05, Math.PI * .15, Math.PI * .85); ctx.stroke(); break;
+    case 'blink': ctx.moveTo(x - rx, y); ctx.quadraticCurveTo(x, y + ry * .35, x + rx, y); ctx.stroke(); break;
+    case 'squeeze': { const d = s < 0 ? 1 : -1; ctx.moveTo(x - d * rx, y - ry * .75); ctx.lineTo(x + d * rx * .8, y); ctx.lineTo(x - d * rx, y + ry * .75); ctx.stroke(); break; }
+  }
+}
+function drawBrow(ctx, type, x, y, rx, ry, s, st) {
+  const by = y - ry * 1.85, w = rx * 1.25; let iy = 0, oy = 0;
+  if (type === 'up') iy = oy = -ry * .55;
+  if (type === 'sad') { iy = -ry * .5; oy = ry * .25; }
+  if (type === 'angry') { iy = ry * .6; oy = -ry * .25; }
+  if (type === 'quirk') { if (s < 0) iy = oy = -ry * .6; else iy = oy = ry * .15; }
+  const xi = x - s * w * .9, xo = x + s * w * .9;
+  ctx.save(); ctx.lineWidth = st.lw * .85; ctx.beginPath(); ctx.moveTo(xo, by + oy);
+  ctx.quadraticCurveTo(x, by + (iy + oy) / 2 - 8, xi, by + iy); ctx.stroke(); ctx.restore();
+}
+function drawMouth(ctx, type, cx, y, st) {
+  ctx.beginPath();
+  switch (type) {
+    case 'smile': ctx.arc(cx, y - 26, 36, Math.PI * .2, Math.PI * .8); ctx.stroke(); break;
+    case 'small': ctx.arc(cx, y - 10, 15, Math.PI * .2, Math.PI * .8); ctx.stroke(); break;
+    case 'frown': ctx.arc(cx, y + 30, 30, Math.PI * 1.22, Math.PI * 1.78); ctx.stroke(); break;
+    case 'side': ctx.moveTo(cx - 22, y + 2); ctx.quadraticCurveTo(cx + 4, y + 12, cx + 28, y - 10); ctx.stroke(); break;
+    case 'o': ctx.ellipse(cx, y, 17, 22, 0, 0, TAU); ctx.fill(); break;
+    case 'wavy': for (let i = 0; i <= 24; i++) { const x = cx - 40 + i * 80 / 24, yy = y + Math.sin(i / 24 * Math.PI * 3) * 7; i ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy); } ctx.stroke(); break;
+    case 'open':
+      ctx.moveTo(cx - 46, y - 16); ctx.quadraticCurveTo(cx, y - 6, cx + 46, y - 16);
+      ctx.quadraticCurveTo(cx + 42, y + 42, cx, y + 44); ctx.quadraticCurveTo(cx - 42, y + 42, cx - 46, y - 16); ctx.closePath(); ctx.fill();
+      if (!st.glow) { ctx.save(); ctx.clip(); ctx.fillStyle = '#ef6f80'; ctx.beginPath(); ctx.ellipse(cx, y + 44, 30, 20, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+      break;
+    case 'grr':
+      ctx.roundRect(cx - 36, y - 14, 72, 28, 12); ctx.fill();
+      if (!st.glow) { ctx.save(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(cx - 28, y); ctx.lineTo(cx + 28, y); for (const k of [-12, 0, 12]) { ctx.moveTo(cx + k, y - 10); ctx.lineTo(cx + k, y + 10); } ctx.stroke(); ctx.restore(); }
+      break;
+  }
+}
+function star4(ctx, x, y, r) { ctx.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4, rr = i % 2 ? r * .32 : r; ctx[i ? 'lineTo' : 'moveTo'](x + Math.sin(a) * rr, y - Math.cos(a) * rr); } ctx.closePath(); ctx.fill(); }
+function drop(ctx, x, y, h) { ctx.beginPath(); ctx.moveTo(x, y - h); ctx.bezierCurveTo(x + h * .8, y, x + h * .7, y + h, x, y + h); ctx.bezierCurveTo(x - h * .7, y + h, x - h * .8, y, x, y - h); ctx.fill(); }
+function drawExtra(ctx, ex, cx, ey, g, rx, ry, st) {
+  if (!ex) return; ctx.save();
+  const accent = (c) => { ctx.fillStyle = st.glow ? st.ink : c; };
+  if (ex === 'sparkle') { accent('#ffbf1f'); star4(ctx, cx - g - 88, ey - 74, 24); star4(ctx, cx + g + 92, ey - 44, 17); }
+  if (ex === 'z') { accent(st.ink); ctx.font = '700 56px Inter, sans-serif'; ctx.fillText('z', cx + g + 64, ey - 70); ctx.font = '700 40px Inter, sans-serif'; ctx.fillText('z', cx + g + 108, ey - 118); }
+  if (ex === 'tear') { accent('#6fbaff'); drop(ctx, cx - g + rx * .4, ey + ry * 1.75, 20); }
+  if (ex === 'sweat') { accent('#6fbaff'); drop(ctx, cx + g + rx * 2.1, ey - ry * 1.2, 22); }
+  ctx.restore();
+}
+
+// curved decal that wraps the front of a head sphere
+function faceDecal(r, st, W = 1.75, H = 1.3, up = 0.5) {
+  const th0 = Math.PI / 2 - up, ph0 = Math.PI / 2 - W / 2;
+  const cv = document.createElement('canvas'); cv.width = FW; cv.height = FH;
+  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+  const mesh = new THREE.Mesh(new THREE.SphereGeometry(r, 56, 40, ph0, W, th0, H),
+    new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: !st.glow, polygonOffset: true, polygonOffsetFactor: -2 }));
+  mesh.renderOrder = 60;
+  const point = (fx, fy, rr = r) => { const ph = ph0 + fx * W, th = th0 + fy * H; return new THREE.Vector3(-rr * Math.cos(ph) * Math.sin(th), rr * Math.cos(th), rr * Math.sin(ph) * Math.sin(th)); };
+  return { mesh, ctx: cv.getContext('2d'), tex, point, st };
+}
+
+/* ---------- shared rig ---------- */
+function rig() {
+  const root = new THREE.Group(), body = new THREE.Group(); root.add(body);
+  const torso = new THREE.Group(); torso.position.y = 0.42; body.add(torso);
+  const neck = new THREE.Group(); neck.position.y = 0.64; torso.add(neck);
+  const head = new THREE.Group(); head.position.y = 0.44; neck.add(head);
+  const headShape = new THREE.Group(); head.add(headShape);
+  const armL = new THREE.Group(); armL.position.set(0.4, 0.5, 0); torso.add(armL);
+  const armR = new THREE.Group(); armR.position.set(-0.4, 0.5, 0); torso.add(armR);
+  const legL = new THREE.Group(); legL.position.set(0.17, 0.42, 0); body.add(legL);
+  const legR = new THREE.Group(); legR.position.set(-0.17, 0.42, 0); body.add(legR);
+  return { root, body, torso, neck, head, headShape, armL, armR, legL, legR };
+}
+function lowerBody(R, pants, shoe, sole, laces = '#ffffff') {
+  R.body.add(M(sph(0.3), fabric(pants), [0, 0.44, 0], [1.25, 0.62, 1.05]));
+  for (const leg of [R.legL, R.legR]) {
+    leg.add(M(cap(0.135, 0.16), fabric(pants), [0, -0.12, 0]));
+    leg.add(M(ring(0.13, 0.035), fabric(pants), [0, -0.22, 0]));
+    leg.add(M(sph(0.15), vinyl(shoe, { roughness: .5, clearcoat: .3 }), [0, -0.31, 0.06], [1.08, 0.78, 1.5]));
+    leg.add(M(new RoundedBoxGeometry(0.31, 0.085, 0.47, 3, 0.04), vinyl(sole, { roughness: .6, clearcoat: .1 }), [0, -0.378, 0.06]));
+    leg.add(M(ring(0.06, 0.016), vinyl(laces, { roughness: .7 }), [0, -0.23, 0.17], [1, 1, 1], [-0.6, 0, 0]));
+  }
+}
+function sleeves(R, mat, cuffMat, handFn) {
+  for (const arm of [R.armL, R.armR]) {
+    arm.add(M(cap(0.12, 0.17), mat, [0, -0.14, 0]));
+    arm.add(M(ring(0.105, 0.04), cuffMat, [0, -0.27, 0]));
+    arm.add(handFn(arm === R.armL));
+  }
+}
+function torsoCore(R, mat) { R.torso.add(M(sph(0.5, 48, 32), mat, [0, 0.3, 0], [0.98, 0.82, 0.8])); }
+// horizontal ring that hugs the torso ellipsoid at height y (torso local)
+function hug(y, tube, mat, grow = 0) {
+  const dy = (y - 0.3) / 0.41, rx = 0.49 * Math.sqrt(Math.max(0.05, 1 - dy * dy));
+  return M(ring(Math.max(0.05, rx - tube * 0.45 + grow), tube), mat, [0, y, 0], [1, 1, 0.82]);
+}
+
+/* ---------- characters (original designs, no team marks) ---------- */
+const CHARS = [];
+
+// 1 · Montréal — hockey bear
+(() => {
+  const R = rig(), fur = '#f3eee6', red = '#cf2734', blue = '#203f8f', white = '#f6f6f6';
+  lowerBody(R, '#1f2a44', '#ffffff', '#e6e6e6', blue);
+  const puff = nylon(red), puffB = nylon(blue), wht = nylon(white);
+  torsoCore(R, puff);
+  R.torso.add(hug(0.1, 0.11, puff), hug(0.3, 0.115, puffB), hug(0.51, 0.1, puff));
+  R.torso.add(hug(0.205, 0.024, wht, 0.03), hug(0.405, 0.024, wht, 0.025));
+  R.torso.add(M(ring(0.2, 0.09), puff, [0, 0.66, 0]));
+  sleeves(R, puff, wht, () => { const h = furry(sph(0.125, 28, 20), fur, { len: .03, layers: 10, repeat: [10, 5] }); h.position.y = -0.37; return h; });
+  // hockey stick in right hand
+  const stick = new THREE.Group(); stick.position.set(0, -0.37, 0); stick.rotation.set(-0.55, 0, -0.12);
+  const wood = new THREE.MeshPhysicalMaterial({ color: '#d7b184', roughness: .45, clearcoat: .6 });
+  stick.add(M(new THREE.CylinderGeometry(0.026, 0.026, 1.0, 14), wood, [0, -0.3, 0]));
+  stick.add(M(new THREE.CylinderGeometry(0.03, 0.03, 0.12, 14), vinyl('#111'), [0, 0.18, 0]));
+  stick.add(M(new RoundedBoxGeometry(0.06, 0.11, 0.34, 2, 0.02), vinyl('#1b1b1b', { roughness: .5 }), [0, -0.8, 0.1], [0.85, 0.85, 0.8], [0.55, 0, 0]));
+  R.armR.add(stick);
+  // head
+  const hs = R.headShape; hs.scale.set(1.06, 0.94, 1);
+  hs.add(furry(sph(0.56, 64, 48), fur, { len: .06, face: true }));
+  for (const s of [-1, 1]) {
+    const ear = furry(sph(0.16, 32, 24), fur, { len: .04, layers: 12, repeat: [10, 5] }); ear.position.set(s * 0.4, 0.52, -0.06); ear.scale.set(1, 1, .62); hs.add(ear);
+    hs.add(M(sph(0.09), fabric('#f2b8b8'), [s * 0.4, 0.51, 0.04], [1, 1, .35]));
+  }
+  // toque
+  const knit = fabric(blue, { roughness: .95 });
+  hs.add(M(new THREE.SphereGeometry(0.645, 48, 24, 0, TAU, 0, 1.15), knit, [0, 0, -0.02], [1, 1.08, 1], [-0.12, 0, 0]));
+  hs.add(M(ring(0.585, 0.07), fabric(red, { roughness: .95 }), [0, 0.25, -0.05], [1, 1, 1], [-0.12, 0, 0]));
+  hs.add(M(ring(0.545, 0.03), fabric(white, { roughness: .95 }), [0, 0.355, -0.065], [1, 1, 1], [-0.12, 0, 0]));
+  const pom = furry(sph(0.13, 28, 20), '#ffffff', { len: .05, layers: 12, repeat: [8, 4] }); pom.position.set(0, 0.73, -0.1); hs.add(pom);
+  const face = faceDecal(0.575, { ink: '#2a211c', er: 36, gap: 148, eyeY: .44, mouthY: .68, lw: 12, brows: true, blush: '255,120,140' });
+  hs.add(face.mesh);
+  hs.add(M(sph(0.07), vinyl('#3a2a24', { roughness: .35 }), face.point(.5, .575, 0.585).toArray(), [1.35, .9, .8]));
+  CHARS.push({ id: 'glace', name: 'Glace', tag: 'Montréal · hockey', R, face });
+})();
+
+// 2 · Toronto — baseball robot
+(() => {
+  const R = rig(), blue = '#1b4fb0', navy = '#132a5c', white = '#f2f3f5', red = '#d62b36';
+  lowerBody(R, '#2a2f3a', '#ffffff', blue, red);
+  const hood = fabric(blue, { roughness: .9 }), dark = fabric(navy, { roughness: .9 });
+  torsoCore(R, hood);
+  R.torso.add(hug(0.02, 0.07, dark, 0.02));
+  R.torso.add(M(new RoundedBoxGeometry(0.44, 0.19, 0.1, 3, 0.045), dark, [0, 0.19, 0.355], [1, 1, 1], [-0.28, 0, 0]));
+  R.torso.add(M(ring(0.23, 0.1), hood, [0, 0.64, -0.02]));
+  R.torso.add(M(sph(0.3), hood, [0, 0.66, -0.24], [1.15, 0.62, 0.7]));
+  for (const s of [-1, 1]) {
+    R.torso.add(M(new THREE.CylinderGeometry(0.012, 0.012, 0.2, 8), fabric('#fff'), [s * 0.08, 0.5, 0.36], [1, 1, 1], [0.25, 0, 0]));
+    R.torso.add(M(sph(0.022), vinyl(red), [s * 0.08, 0.4, 0.385]));
+  }
+  sleeves(R, hood, dark, (isL) => {
+    const g = new THREE.Group(); g.position.y = -0.37;
+    g.add(M(sph(0.12), vinyl(white), [0, 0, 0]));
+    if (isL) { // baseball
+      const ball = new THREE.Group(); ball.position.set(0.02, -0.06, 0.1);
+      ball.add(M(sph(0.1, 32, 24), new THREE.MeshPhysicalMaterial({ color: '#fbfaf6', roughness: .55 })));
+      const seam = fabric(red, { roughness: .6 });
+      ball.add(M(new THREE.TorusGeometry(0.075, 0.009, 8, 40), seam, [0.045, 0, 0], [1, 1, 1], [0, Math.PI / 2, 0]));
+      ball.add(M(new THREE.TorusGeometry(0.075, 0.009, 8, 40), seam, [-0.045, 0, 0], [1, 1, 1], [0, Math.PI / 2, 0]));
+      g.add(ball);
+    }
+    return g;
+  });
+  // helmet head
+  const hs = R.headShape; hs.scale.set(1.1, 0.95, 1);
+  hs.add(M(sph(0.56, 64, 48), vinyl(white)));
+  hs.add(M(new THREE.SphereGeometry(0.566, 56, 40, Math.PI / 2 - 1.0, 2.0, Math.PI / 2 - 0.55, 1.18), vinyl('#0b0e14', { roughness: .12 })));
+  for (const s of [-1, 1]) {
+    hs.add(M(new THREE.CylinderGeometry(0.15, 0.15, 0.12, 32), vinyl(white), [s * 0.56, 0.02, 0], [1, 1, 1], [0, 0, Math.PI / 2]));
+    hs.add(M(new THREE.TorusGeometry(0.15, 0.025, 12, 40), vinyl(blue), [s * 0.6, 0.02, 0], [1, 1, 1], [0, Math.PI / 2, 0]));
+  }
+  // cap (blank front)
+  const capM = fabric(blue, { roughness: .85 });
+  hs.add(M(new THREE.SphereGeometry(0.585, 48, 24, 0, TAU, 0, 0.98), capM, [0, 0.01, 0]));
+  hs.add(M(new THREE.CylinderGeometry(0.31, 0.31, 0.03, 40), capM, [0, 0.36, 0.6], [1, 1, 0.95], [0.2, 0, 0]));
+  hs.add(M(sph(0.04), capM, [0, 0.585, 0]));
+  const face = faceDecal(0.57, { ink: '#a6e3ff', glow: true, er: 38, tall: 1.4, gap: 150, eyeY: .44, mouthY: .7, lw: 13, brows: true }, 1.85, 1.1, 0.48);
+  hs.add(face.mesh);
+  CHARS.push({ id: 'nova', name: 'Nova', tag: 'Toronto · baseball', R, face });
+})();
+
+// 3 · USA — varsity cat
+(() => {
+  const R = rig(), fur = '#d8cdbf', navy = '#1c2b4a', cream = '#efe5cf', red = '#c5323a';
+  lowerBody(R, '#5f84b3', red, '#f4f4f4', '#ffffff');
+  const wool = fabric(navy, { roughness: .95 }), sleeve = new THREE.MeshPhysicalMaterial({ color: cream, roughness: .45, clearcoat: .5 });
+  const rib = fabric(navy, { roughness: 1 }), ribR = fabric(red, { roughness: 1 }), ribC = fabric(cream, { roughness: 1 });
+  torsoCore(R, wool);
+  R.torso.add(hug(0.03, 0.065, rib, 0.02), hug(0.055, 0.022, ribR, 0.07), hug(0.0, 0.022, ribC, 0.07));
+  R.torso.add(M(ring(0.2, 0.075), rib, [0, 0.66, 0]), M(ring(0.235, 0.022), ribR, [0, 0.625, 0]));
+  for (const y of [0.13, 0.26, 0.39, 0.52]) {
+    const dy = (y - 0.3) / 0.41, z = 0.4 * Math.sqrt(1 - dy * dy);
+    R.torso.add(M(sph(0.022), vinyl(cream), [0, y, z + 0.005]));
+  }
+  // star patch (chest, character's left)
+  const star = new THREE.Shape(); for (let i = 0; i < 10; i++) { const a = i * Math.PI / 5, r = i % 2 ? 0.045 : 0.105; star[i ? 'lineTo' : 'moveTo'](Math.sin(a) * r, Math.cos(a) * r); }
+  const sg = new THREE.ExtrudeGeometry(star, { depth: 0.015, bevelEnabled: true, bevelSize: 0.008, bevelThickness: 0.008, bevelSegments: 2 });
+  const patch = new THREE.Group(); patch.position.set(0.2, 0.43, 0.34); patch.rotation.set(-0.15, 0.5, 0);
+  patch.add(M(sg, fabric(red)), M(sg, fabric(cream), [0, 0, 0.012], [0.7, 0.7, 1])); R.torso.add(patch);
+  sleeves(R, sleeve, rib, () => { const h = furry(sph(0.125, 28, 20), fur, { len: .03, layers: 10, repeat: [10, 5] }); h.position.y = -0.37; return h; });
+  for (const arm of [R.armL, R.armR]) arm.add(M(ring(0.11, 0.015), ribR, [0, -0.25, 0]));
+  const hs = R.headShape; hs.scale.set(1.08, 0.93, 1);
+  hs.add(furry(sph(0.56, 64, 48), fur, { len: .055, face: true }));
+  for (const s of [-1, 1]) {
+    const ear = furry(new THREE.ConeGeometry(0.17, 0.3, 28, 6), fur, { len: .03, layers: 12, repeat: [8, 4] });
+    ear.position.set(s * 0.32, 0.55, -0.04); ear.rotation.set(-0.1, 0, -s * 0.38); ear.scale.set(1, 1, .7); hs.add(ear);
+    hs.add(M(new THREE.ConeGeometry(0.1, 0.18, 20), fabric('#f0a9b0'), [s * 0.31, 0.53, 0.04], [1, 1, .35], [-0.1, 0, -s * 0.38]));
+  }
+  const face = faceDecal(0.57, { ink: '#2b2730', er: 36, gap: 148, eyeY: .44, mouthY: .68, lw: 12, brows: true, whiskers: true, blush: '255,120,140' });
+  hs.add(face.mesh);
+  hs.add(M(sph(0.05), vinyl('#e88a98', { roughness: .4 }), face.point(.5, .575, 0.578).toArray(), [1.35, .85, .8]));
+  CHARS.push({ id: 'liberty', name: 'Liberty', tag: 'USA · varsity', R, face });
+})();
+
+for (const c of CHARS) { c.R.root.visible = false; scene.add(c.R.root); }
+
+/* ---------- poses ---------- */
+const POSE = {
+  happy:       { armZ: .28, armX: 0,    hx: 0,    hy: 0,    hz: .08, lean: 0,   bob: 1 },
+  euphoric:    { armZ: 2.45, armX: -.1, hx: -.18, hy: 0,    hz: 0,   lean: -.05, hop: 1 },
+  surprised:   { armZ: .85, armX: -.5,  hx: -.2,  hy: 0,    hz: 0,   lean: -.1 },
+  curious:     { armZ: .12, armX: 0,    hx: .06,  hy: .25,  hz: .3,  lean: 0,   rx: -1.9, rz: -.45 },
+  sleepy:      { armZ: .02, armX: .05,  hx: .32,  hy: 0,    hz: .12, lean: .04, sway: 1, speed: .55 },
+  sad:         { armZ: -.02, armX: .12, hx: .38,  hy: 0,    hz: 0,   lean: .1,  speed: .6 },
+  embarrassed: { armZ: -.45, armX: -.75, hx: .22, hy: -.2,  hz: .14, lean: .03 },
+  angry:       { armZ: .35, armX: .2,   hx: .08,  hy: 0,    hz: 0,   lean: .12, shake: 1 },
+};
+const KEYS = ['armZ', 'armX', 'hx', 'hy', 'hz', 'lean', 'rx', 'rz'];
+
+/* ---------- state ---------- */
+const state = { char: 0, emotion: 'happy', motion: reduceMotion ? 'idle' : 'walk', speed: 1, bounce: 1, yaw: -35 * Math.PI / 180 };
+const pose = Object.fromEntries(KEYS.map(k => [k, 0]));
+let phase = 0, walkAmt = state.motion === 'walk' ? 1 : 0, yawNow = state.yaw, jumpY = 0, jumpV = 0;
+let blinkUntil = 0, nextBlink = 1.5, blinking = false;
+const cur = () => CHARS[state.char];
+function paintFace(c, blink = false) { drawFace(c.face.ctx, state.emotion, c.face.st, blink); c.face.tex.needsUpdate = true; }
+
+/* ---------- layout / camera ---------- */
+const CH = 3.05, CW = 2.4, CY = 1.15;
+let viewW = 1, viewH = 1, trayOverlap = 0, recording = false;
+function fit(w, h, tray) {
+  const F = h + tray, hr = h - tray, t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const d = Math.max((CH * F / hr) / (2 * t), (CW * F / w) / (2 * t));
+  camera.aspect = w / F;
+  if (tray > 0) camera.setViewOffset(w, F, 0, F - h, w, h); else camera.clearViewOffset();
+  camera.position.set(0, CY + 0.7, d); camera.lookAt(0, CY, 0); camera.updateProjectionMatrix();
+}
+function applySize(w, h, tray, pr) { renderer.setPixelRatio(pr); renderer.setSize(w, h, false); fit(w, h, tray); }
+function layout() {
+  if (recording) return;
+  const r = card.getBoundingClientRect(), tr = document.querySelector('.tray').getBoundingClientRect();
+  viewW = r.width; viewH = r.height; trayOverlap = Math.max(0, (r.bottom - tr.top) * 0.8);
+  applySize(viewW, viewH, trayOverlap, Math.min(devicePixelRatio, 2));
+}
+addEventListener('resize', layout);
+
+/* ---------- animation ---------- */
+let last = performance.now(), T = 0;
+function update(dt) {
+  const c = cur(), P = POSE[state.emotion], R = c.R, k = 1 - Math.exp(-dt * 7);
+  for (const kk of KEYS) pose[kk] += ((P[kk] ?? 0) - pose[kk]) * k;
+  const sp = state.speed * (P.speed ?? 1), b = state.bounce;
+  T += dt * sp;
+  walkAmt += ((state.motion === 'walk' ? 1 : 0) - walkAmt) * k;
+  phase += dt * sp * 6.2 * walkAmt;
+  const s = Math.sin(phase), w = walkAmt;
+  R.legL.rotation.x = s * 0.6 * w; R.legR.rotation.x = -s * 0.6 * w;
+  R.armL.rotation.set(pose.armX - s * 0.5 * w, 0, 0.15 + pose.armZ);
+  R.armR.rotation.set(pose.armX + pose.rx + s * 0.5 * w * (1 - Math.min(1, Math.abs(pose.rx))), 0, -(0.15 + pose.armZ) - pose.rz);
+  const bob = Math.abs(Math.cos(phase)) * 0.055 * b * w;
+  const hop = P.hop ? Math.abs(Math.sin(T * 5.5)) * 0.17 * b : 0;
+  const happy = P.bob ? Math.abs(Math.sin(T * 4)) * 0.03 * b * (1 - w) : 0;
+  jumpV -= 9.8 * dt; jumpY = Math.max(0, jumpY + jumpV * dt); if (jumpY === 0) jumpV = 0;
+  R.root.position.y = bob + hop + happy + jumpY;
+  R.body.rotation.set(0, s * 0.1 * w, s * 0.06 * w + (P.sway ? Math.sin(T * 1.3) * 0.07 : 0) + (P.shake ? Math.sin(T * 38) * 0.025 * b : 0));
+  R.torso.rotation.x = pose.lean + 0.07 * w;
+  R.torso.scale.y = 1 + Math.sin(T * 2.4) * 0.012 * (1 - w);
+  R.neck.rotation.set(pose.hx - 0.04 * w + Math.cos(phase * 2) * 0.03 * w * b, pose.hy, pose.hz + Math.sin(T * 1.6) * 0.03);
+  yawNow += (state.yaw - yawNow) * (1 - Math.exp(-dt * 8));
+  R.root.rotation.y = yawNow;
+  const lift = R.root.position.y; shadow.scale.setScalar(1 - Math.min(0.45, lift * 1.4)); shadow.material.opacity = 1 - Math.min(0.6, lift * 2);
+  // blinking
+  nextBlink -= dt;
+  if (nextBlink <= 0 && !blinking) { blinking = true; blinkUntil = 0.13; paintFace(c, true); }
+  if (blinking) { blinkUntil -= dt; if (blinkUntil <= 0) { blinking = false; nextBlink = 2 + Math.random() * 3; paintFace(c, false); } }
+}
+function loop(now) {
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  update(dt); renderer.render(scene, camera);
+  if (recording) recTick(now);
+  if (rec && recTrack && recTrack.requestFrame) recTrack.requestFrame();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- UI ---------- */
+const chars = $('chars'), emos = $('emos'), thumbs = [];
+CHARS.forEach((c, i) => {
+  const b = document.createElement('button'); b.className = 'thumb'; b.setAttribute('aria-label', `${c.name}, ${c.tag}`); b.title = `${c.name} — ${c.tag}`;
+  b.innerHTML = `<img alt=""><b>${c.name}</b>`; b.onclick = () => setCharacter(i); chars.appendChild(b); thumbs.push(b);
+});
+const iconSt = { ink: '#1b1b1d', er: 40, gap: 140, eyeY: .44, mouthY: .68, lw: 24, brows: true, blush: '255,110,130' };
+const tmp = document.createElement('canvas'); tmp.width = FW; tmp.height = FH; const tctx = tmp.getContext('2d');
+EMOTIONS.forEach((e) => {
+  const b = document.createElement('button'); b.className = 'eb'; b.dataset.e = e; b.title = e[0].toUpperCase() + e.slice(1); b.setAttribute('aria-label', b.title);
+  const cv = document.createElement('canvas'); cv.width = 120; cv.height = 84; b.appendChild(cv);
+  drawFace(tctx, e, iconSt); cv.getContext('2d').drawImage(tmp, 149, 118, 470, 330, 0, 0, 120, 84);
+  b.onclick = () => setEmotion(e); emos.appendChild(b);
+});
+document.querySelectorAll('#motions .mb').forEach(b => b.onclick = () => setMotion(b.dataset.m));
+document.querySelectorAll('.rail .ib').forEach(b => b.onclick = () => setYaw(+b.dataset.yaw));
+
+function setCharacter(i) {
+  CHARS.forEach((c, j) => c.R.root.visible = j === i); state.char = i;
+  thumbs.forEach((t, j) => t.setAttribute('aria-pressed', j === i));
+  const c = cur(); $('whoName').textContent = c.name; $('whoTag').textContent = c.tag; $('whoImg').src = c.thumb || '';
+  paintFace(c);
+}
+function setEmotion(e) {
+  state.emotion = e; paintFace(cur());
+  emos.querySelectorAll('.eb').forEach(b => b.setAttribute('aria-pressed', b.dataset.e === e));
+  $('emoName').textContent = '· ' + e[0].toUpperCase() + e.slice(1);
+}
+function setMotion(m) { state.motion = m; document.querySelectorAll('#motions .mb').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === m)); }
+function setYaw(deg) {
+  deg = ((deg + 540) % 360) - 180; state.yaw = deg * Math.PI / 180;
+  const s = $('sTurn'); s.value = deg; paintRange(s); $('vTurn').textContent = Math.round(deg) + '°';
+  document.querySelectorAll('.rail .ib').forEach(b => b.setAttribute('aria-pressed', +b.dataset.yaw === Math.round(deg)));
+}
+function paintRange(el) { const p = (el.value - el.min) / (el.max - el.min); el.style.setProperty('--p', `calc(${p * 100}% + ${(0.5 - p) * 12}px + 6px)`); }
+const sliders = { sSpeed: v => { state.speed = v; $('vSpeed').textContent = v.toFixed(1) + '×'; }, sBounce: v => { state.bounce = v; $('vBounce').textContent = v.toFixed(1); }, sTurn: v => setYaw(v) };
+for (const [id, fn] of Object.entries(sliders)) { const el = $(id); el.oninput = () => { paintRange(el); fn(+el.value); }; paintRange(el); }
+if (reduceMotion) { $('sBounce').value = 0.4; $('sBounce').oninput(); }
+window.avatar = { setEmotion, setMotion, setCharacter, emotions: EMOTIONS }; // console hook
+
+// drag to rotate, tap to jump
+let drag = null;
+canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, yaw: state.yaw, moved: false }; canvas.setPointerCapture(e.pointerId); canvas.classList.add('dragging'); });
+canvas.addEventListener('pointermove', e => { if (!drag) return; const dx = e.clientX - drag.x; if (Math.abs(dx) > 4) drag.moved = true; if (drag.moved) setYaw((drag.yaw + dx * 0.01) * 180 / Math.PI); });
+canvas.addEventListener('pointerup', () => { if (drag && !drag.moved && jumpY === 0) jumpV = 3.2; drag = null; canvas.classList.remove('dragging'); });
+
+/* ---------- export ---------- */
+const RES = [720, 1080], RATIOS = [['2:3', 2 / 3], ['1:1', 1], ['9:16', 9 / 16], ['16:9', 16 / 9]], DURS = [3, 5, 10];
+const out = { res: 1, ratio: 0, dur: 1 };
+const cycle = (id, key, list, label) => { $(id).onclick = () => { out[key] = (out[key] + 1) % list.length; $(id).querySelector('span').textContent = label(list[out[key]]); }; };
+cycle('tRes', 'res', RES, v => v + 'p'); cycle('tRatio', 'ratio', RATIOS, v => v[0]); cycle('tDur', 'dur', DURS, v => v + 's');
+const even = n => Math.round(n / 2) * 2;
+function outSize() { const h = RES[out.res], r = RATIOS[out.ratio][1]; return r > 1 ? [even(h * r), h] : [even(h * r), h]; }
+const fname = (ext) => `${cur().id}-${state.emotion}-${state.motion}.${ext}`;
+
+let toastTimer;
+function toast(msg, sticky = false, rec = false) {
+  const t = $('toast'); $('toastText').textContent = msg; t.classList.add('on'); t.classList.toggle('recording', rec);
+  clearTimeout(toastTimer); if (!sticky) toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+// downloads: platform capability when published, plain <a download> when opened as a local file
+let dlP = null;
+function downloadsNS() { if (!dlP) dlP = (window.claude && typeof window.claude.use === 'function') ? window.claude.use('downloads').catch(() => null) : Promise.resolve(undefined); return dlP; }
+async function saveFile(blob, name) {
+  const d = await downloadsNS();
+  if (d === undefined) { // standalone file
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000); toast('Downloaded ' + name); return;
+  }
+  if (!d) { toast('Downloads aren’t available in this view'); return; }
+  try { await d.save({ filename: name, data: blob }); toast('Saved ' + name); }
+  catch (e) { toast(e?.code === 'declined' ? 'Download cancelled' : e?.code === 'rate_limited' ? 'A download prompt is already open' : 'Download unavailable here'); }
+}
+function busy(on) { ['tExport', 'tPng', 'tRes', 'tRatio', 'tDur'].forEach(id => $(id).disabled = on); }
+
+$('tPng').onclick = async () => {
+  const [w, h] = outSize(); recording = true; applySize(w, h, 0, 1);
+  scene.background = null; renderer.setClearColor(0x000000, 0); renderer.render(scene, camera);
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  scene.background = BG; recording = false; layout();
+  if (blob) saveFile(blob, fname('png')); else toast('PNG export failed');
+};
+
+let rec = null, recStart = 0, recDur = 0;
+function recTick(now) { if (!rec) return; const left = Math.max(0, recDur - (now - recStart) / 1000); $('toastText').textContent = `Recording ${w0}×${h0} · ${left.toFixed(1)}s`; }
+let w0 = 0, h0 = 0, recTrack = null;
+$('tExport').onclick = async () => {
+  const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm', 'video/mp4'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  if (!mime || !canvas.captureStream) { toast('Video export isn’t supported in this browser'); return; }
+  [w0, h0] = outSize(); recording = true; busy(true); applySize(w0, h0, 0, 1);
+  let stream = canvas.captureStream(0); recTrack = stream.getVideoTracks()[0];
+  if (!recTrack || !recTrack.requestFrame) { stream.getTracks().forEach(t => t.stop()); stream = canvas.captureStream(30); recTrack = null; }
+  const chunks = [];
+  rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10e6 });
+  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+  const stopped = new Promise(r => rec.onstop = r);
+  recDur = DURS[out.dur]; recStart = performance.now(); rec.start(250); toast('Recording…', true, true);
+  await new Promise(r => setTimeout(r, recDur * 1000));
+  rec.stop(); await stopped; stream.getTracks().forEach(t => t.stop()); rec = null; recTrack = null;
+  recording = false; busy(false); layout();
+  const blob = new Blob(chunks, { type: mime.split(';')[0] });
+  if (!blob.size) { toast('Recording came out empty, try again'); return; }
+  saveFile(blob, fname(mime.includes('mp4') ? 'mp4' : 'webm'));
+};
+
+/* ---------- boot ---------- */
+function makeThumbs() {
+  applySize(176, 216, 0, 1);
+  const saved = state.yaw;
+  CHARS.forEach((c, i) => {
+    CHARS.forEach((o, j) => o.R.root.visible = j === i);
+    c.R.root.rotation.y = -0.45; paintFace(c); update(0);
+    c.R.root.rotation.y = -0.45; c.R.root.position.y = 0;
+    camera.position.set(0, 1.55, 6.1); camera.lookAt(0, 1.25, 0); camera.updateProjectionMatrix();
+    renderer.render(scene, camera); c.thumb = canvas.toDataURL('image/png');
+    thumbs[i].querySelector('img').src = c.thumb;
+  });
+  state.yaw = saved;
+}
+paintFace(CHARS[0]);
+makeThumbs();
+setCharacter(0); setEmotion('happy'); setMotion(state.motion); setYaw(-35);
+layout();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

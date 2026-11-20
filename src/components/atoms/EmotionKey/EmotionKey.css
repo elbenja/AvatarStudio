@@ -1,0 +1,16 @@
+.sd-key {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 1; padding: 0;
+  border: 0; border-radius: var(--sd-r-ctl);
+  background: var(--sd-well); color: var(--sd-ink);
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--sd-fast) var(--sd-out),
+    color var(--sd-fast) var(--sd-out),
+    transform var(--sd-slow) var(--sd-spring);
+}
+.sd-key svg { display: block; width: 74%; height: auto; transition: transform var(--sd-slow) var(--sd-spring); }
+.sd-key:hover { background: var(--sd-well-hover); }
+.sd-key:hover svg { transform: scale(1.12) rotate(-5deg); }
+.sd-key:active { transform: scale(0.92); transition-duration: var(--sd-press); }
+.sd-key.is-on { background: var(--sd-ink); color: var(--sd-ink-inverse); animation: sd-pop var(--sd-slow) var(--sd-spring); }
+.sd-key.is-on:hover { background: var(--sd-ink-hover); }

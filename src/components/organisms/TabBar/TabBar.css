@@ -1,0 +1,23 @@
+.sd-tabs {
+  position: relative; display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); padding: 6px;
+  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-float);
+}
+.sd-tabs-pill {
+  position: absolute; left: 6px; top: 6px; bottom: 6px; width: calc((100% - 12px) / var(--n, 4));
+  border-radius: var(--sd-r-card); background: var(--sd-ink);
+  opacity: 0; transform: translateX(calc(var(--i, 0) * 100%)) scale(0.9);
+  transition: transform 380ms var(--sd-spring), opacity var(--sd-med) var(--sd-out);
+}
+.sd-tabs-pill.is-on { opacity: 1; transform: translateX(calc(var(--i, 0) * 100%)); }
+
+.sd-tab {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  height: 52px; padding: 0; border: 0; border-radius: var(--sd-r-card);
+  background: transparent; color: var(--sd-ink); font-size: var(--sd-text-xs); font-weight: 500;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: color var(--sd-med) var(--sd-out), transform var(--sd-slow) var(--sd-spring);
+}
+.sd-tab:active { transform: scale(0.94); transition-duration: var(--sd-press); }
+.sd-tab.is-on { color: var(--sd-ink-inverse); }
+.sd-tab.is-on .sd-ico { animation: sd-pop var(--sd-slow) var(--sd-spring); }

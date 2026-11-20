@@ -1,0 +1,28 @@
+.sd-tile {
+  position: relative; display: block; width: 100%; aspect-ratio: 92 / 112; padding: 0;
+  border: 0; border-radius: var(--sd-r-card);
+  background: var(--sd-surface); box-shadow: inset 0 0 0 1px var(--sd-line);
+  color: var(--sd-ink); overflow: hidden;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition:
+    transform var(--sd-slow) var(--sd-spring),
+    box-shadow var(--sd-med) var(--sd-out),
+    background-color var(--sd-fast) var(--sd-out);
+}
+.sd-tile:hover { transform: translateY(-2px); background: #fafafa; }
+.sd-tile:active { transform: scale(0.97); transition-duration: var(--sd-press); }
+.sd-tile.is-on { box-shadow: inset 0 0 0 2px var(--sd-ink); }
+
+.sd-tile img {
+  position: absolute; left: 4%; top: 2%; width: 92%; height: auto; aspect-ratio: 1 / 1; object-fit: contain;
+  transition: transform var(--sd-slow) var(--sd-spring);
+}
+.sd-tile:hover img { transform: translateY(-2px) scale(1.06) rotate(-2deg); }
+.sd-tile.is-on img { animation: sd-hop var(--sd-settle) var(--sd-spring); }
+
+.sd-tile-name {
+  position: absolute; left: 8px; bottom: 7px;
+  display: inline-flex; align-items: center; height: 18px; padding: 0 5px;
+  border-radius: 5px; background: rgba(255, 255, 255, 0.92);
+  font-size: var(--sd-text-sm); font-weight: 500; line-height: 1;
+}

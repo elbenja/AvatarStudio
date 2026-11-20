@@ -1,0 +1,7 @@
+.sd-panel {
+  display: flex; flex-direction: column; gap: 18px; width: 204px; padding: 16px;
+  border-radius: var(--sd-r-bar); background: var(--sd-surface); box-shadow: var(--sd-shadow-panel);
+}
+.sd-panel--bare { width: 100%; padding: 0; border-radius: 0; background: transparent; box-shadow: none; }
+.sd-panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.sd-panel-title { font-size: var(--sd-text-base); font-weight: 600; line-height: 1.3; }

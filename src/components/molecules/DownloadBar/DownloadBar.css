@@ -1,0 +1,6 @@
+.sd-dl {
+  display: inline-flex; align-items: center; gap: 4px; padding: 8px;
+  border-radius: var(--sd-r-bar); background: var(--sd-surface); box-shadow: var(--sd-shadow-float);
+}
+.sd-dl--flat { display: flex; gap: 6px; padding: 0; border-radius: 0; background: none; box-shadow: none; }
+.sd-dl--flat > * { flex: 1 1 0; min-width: 0; }

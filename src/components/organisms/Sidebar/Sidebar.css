@@ -1,0 +1,8 @@
+.sd-side {
+  display: flex; flex-direction: column; width: 232px; height: 100%;
+  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-float);
+  overflow: hidden auto;
+}
+.sd-side-top { display: flex; justify-content: flex-end; padding: 10px; }
+/* Hairlines between sections, drawn inside so they never add height. */
+.sd-side > * + * { box-shadow: inset 0 1px 0 var(--sd-line); }

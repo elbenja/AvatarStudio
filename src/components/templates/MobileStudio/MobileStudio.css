@@ -1,0 +1,23 @@
+.sd-phone { position: relative; width: 100%; height: 100dvh; background: var(--sd-canvas); overflow: hidden; }
+
+.sd-phone-top {
+  position: absolute; left: 12px; right: 12px; top: calc(12px + env(safe-area-inset-top, 0px)); z-index: 5;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.sd-phone-cta { height: var(--sd-hit); }
+
+/* The stage steps up and back when a sheet opens; further for the taller Motion sheet. */
+.sd-phone-stage {
+  position: absolute; left: 0; right: 0; top: 56px; bottom: 84px; display: flex;
+  transition: transform var(--sd-settle) var(--sd-spring);
+}
+.sd-phone-stage > * { flex: 1 1 auto; min-width: 0; }
+.sd-phone-stage.is-lifted { transform: translateY(-118px) scale(0.8); }
+.sd-phone-stage.is-lifted-more { transform: translateY(-196px) scale(0.6); }
+
+.sd-phone-sheet { position: absolute; left: 12px; right: 12px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); z-index: 7; }
+.sd-phone-sliders { padding: 4px 16px 16px; }
+.sd-phone-tabs { position: absolute; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); z-index: 8; }
+
+/* The logo's subtitle is the first thing to go on the narrowest phones. */
+@media (max-width: 359px) { .sd-phone-top .sd-logo-sub { display: none; } }

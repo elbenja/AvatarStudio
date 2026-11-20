@@ -1,0 +1,34 @@
+.sd-btn {
+  position: relative; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px;
+  border: 0; border-radius: var(--sd-r-ctl);
+  background: transparent; color: var(--sd-ink);
+  font-size: var(--sd-text-base); font-weight: 500; white-space: nowrap; text-decoration: none;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--sd-fast) var(--sd-out),
+    color var(--sd-fast) var(--sd-out),
+    transform var(--sd-slow) var(--sd-spring);
+}
+.sd-btn:hover { background: var(--sd-well); color: var(--sd-ink); }
+.sd-btn:active { transform: scale(0.97); transition-duration: var(--sd-press); }
+
+.sd-btn--soft { background: var(--sd-selected); }
+.sd-btn--soft:hover { background: var(--sd-selected-hover); }
+
+.sd-btn--solid { background: var(--sd-ink); color: var(--sd-ink-inverse); font-weight: 600; }
+.sd-btn--solid:hover { background: var(--sd-ink-hover); color: var(--sd-ink-inverse); }
+/* A glint crosses the solid button once per hover. */
+.sd-btn--solid::after {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 40%;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0));
+  transform: translateX(-140%) skewX(-18deg); pointer-events: none;
+}
+.sd-btn--solid:hover::after { transform: translateX(320%) skewX(-18deg); transition: transform 640ms var(--sd-out); }
+
+.sd-btn--wide { width: 100%; height: var(--sd-hit); }
+
+.sd-btn .sd-ico { transition: transform var(--sd-med) var(--sd-out); }
+.sd-btn:hover .sd-ico { transform: rotate(-5deg); }
+.sd-btn:hover .sd-ico--end { transform: translateX(2px); }

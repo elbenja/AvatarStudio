@@ -1,0 +1,9 @@
+node_modules
+dist
+.DS_Store
+*.tsbuildinfo
+
+# Third-party inspiration images: not ours to publish
+references/
+# Local editor/agent config
+.claude/
