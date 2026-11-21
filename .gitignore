@@ -7,3 +7,4 @@ dist
 references/
 # Local editor/agent config
 .claude/
+.vercel
