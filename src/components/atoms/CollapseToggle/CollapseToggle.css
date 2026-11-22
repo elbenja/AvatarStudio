@@ -1,4 +1,4 @@
-/* Shares .sd-add (Section.css) with the "+" link; only the folding glyph is its own. */
+/* The chip itself is .sd-add in Section.css; only the folding glyph lives here. */
 .sd-add svg {
   display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round;
   transition: transform var(--sd-slow) var(--sd-spring);

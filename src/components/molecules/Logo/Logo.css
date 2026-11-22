@@ -1,18 +1,10 @@
 .sd-logo {
-  position: relative; isolation: isolate;
+  position: relative;
   display: inline-flex; align-items: center; gap: 10px; padding: 5px 12px 5px 5px;
   border-radius: var(--sd-r-bar); color: var(--sd-ink); text-decoration: none;
   -webkit-tap-highlight-color: transparent;
   transition: transform var(--sd-slow) var(--sd-spring);
 }
-/* The glow has no container: a blurred gradient behind the lockup itself. */
-.sd-logo::after {
-  content: ""; position: absolute; inset: 2px 8px; z-index: -1; border-radius: 999px;
-  background: var(--sd-glow); background-size: 160% 100%;
-  filter: blur(20px); opacity: 0; transform: scale(0.6); pointer-events: none;
-  transition: opacity var(--sd-slow) var(--sd-out), transform 520ms var(--sd-spring);
-}
-.sd-logo:hover::after, .sd-logo:focus-visible::after { opacity: 0.5; transform: none; animation: sd-glow 4s ease-in-out infinite alternate; }
 .sd-logo:active { transform: scale(0.97); transition-duration: var(--sd-press); }
 
 .sd-logo-mark { display: block; width: 34px; height: 34px; color: #26252c; }
@@ -37,5 +29,3 @@
 .sd-logo:hover .sd-logo-sub-a, .sd-logo:focus-visible .sd-logo-sub-a { opacity: 0; transform: translateY(-100%); }
 .sd-logo:hover .sd-logo-sub-b, .sd-logo:focus-visible .sd-logo-sub-b { opacity: 1; transform: none; }
 .sd-logo:hover .sd-logo-sub svg, .sd-logo:focus-visible .sd-logo-sub svg { transform: translate(1px, -1px); }
-
-@keyframes sd-glow { from { background-position: 0% 50%; } to { background-position: 100% 50%; } }

@@ -19,9 +19,7 @@
   transition: background-color var(--sd-fast) var(--sd-out), color var(--sd-fast) var(--sd-out);
 }
 .sd-add::before { content: ""; position: absolute; inset: -10px; }
-.sd-add .sd-ico { width: 16px; height: 16px; transition: transform var(--sd-slow) var(--sd-spring); }
 .sd-add:hover { background: var(--sd-well); color: var(--sd-ink); }
-.sd-add:hover .sd-ico { transform: rotate(90deg); }
 .sd-add:active { transform: scale(0.9); }
 
 .sd-well { padding: 6px; border-radius: var(--sd-r-card); box-shadow: inset 0 0 0 1px var(--sd-line); }

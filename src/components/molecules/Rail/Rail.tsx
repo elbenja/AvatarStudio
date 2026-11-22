@@ -29,7 +29,7 @@ export function Rail(props: RailProps) {
           <div className="sd-rail-rule" role="separator" />
         </>
       )}
-      <IconButton tipSide="right" glyph="about" label="About this project" onClick={props.onAbout} />
+      <IconButton tipSide="right" glyph="about" label="About" onClick={props.onAbout} />
     </div>
   );
 }
