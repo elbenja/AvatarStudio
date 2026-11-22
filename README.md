@@ -97,4 +97,4 @@ off.
 
 ## Not done yet
 
-- "Get yours" and the "+" links point at silverdesk.com until the landing page exists (`VITE_GET_YOURS_URL`).
+- "Get yours" points at silverdesk.com until the landing page exists (`VITE_GET_YOURS_URL`).
