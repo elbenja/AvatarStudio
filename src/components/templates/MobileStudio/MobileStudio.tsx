@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { StudioController } from '../../../state/controller';
+import type { StudioTemplateProps } from '../../../state/controller';
 import { GET_YOURS_URL } from '../../../config';
 import { Button } from '../../atoms/Button/Button';
 import { Section } from '../../atoms/Section/Section';
@@ -8,6 +8,8 @@ import { CharacterPicker } from '../../molecules/CharacterPicker/CharacterPicker
 import { DownloadBar } from '../../molecules/DownloadBar/DownloadBar';
 import { EmotionPicker } from '../../molecules/EmotionPicker/EmotionPicker';
 import { MotionSwitch } from '../../molecules/MotionSwitch/MotionSwitch';
+import { Rail } from '../../molecules/Rail/Rail';
+import { AboutOverlay } from '../../organisms/AboutOverlay/AboutOverlay';
 import { BottomSheet } from '../../organisms/BottomSheet/BottomSheet';
 import { MotionPanel } from '../../organisms/MotionPanel/MotionPanel';
 import { Stage } from '../../organisms/Stage/Stage';
@@ -28,8 +30,9 @@ const SHEET_ID = 'sd-sheet';
 export const tick = () => { try { navigator.vibrate?.(8); } catch { /* not available */ } };
 
 /** One sheet with four contents over a stage that steps back so the character is never covered. */
-export function MobileStudio({ state, character, actions, downloads }: StudioController) {
+export function MobileStudio({ state, character, actions, downloads, live }: StudioTemplateProps) {
   const [open, setOpen] = useState<Panel | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const [last, setLast] = useState<Panel>('character');
   const [opens, setOpens] = useState(0);
   // The sheet keeps its last content while it slides away.
@@ -54,7 +57,12 @@ export function MobileStudio({ state, character, actions, downloads }: StudioCon
       </div>
 
       <div className={'sd-phone-stage' + lift}>
-        <Stage {...state} pad={1.1} onTurn={actions.setTurn} onMood={actions.setMood} />
+        <Stage {...state} live={live} pad={1.1} onTurn={actions.setTurn} onMood={actions.setMood} />
+      </div>
+
+      {/* About floats over the stage, bottom-left above the tabs; it steps aside while a sheet is open. */}
+      <div className={'sd-phone-rail' + (open ? ' is-hidden' : '')} inert={open !== null}>
+        <Rail compact onAbout={() => { tick(); setOpen(null); setAboutOpen(true); }} />
       </div>
 
       <div className="sd-phone-sheet">
@@ -80,6 +88,8 @@ export function MobileStudio({ state, character, actions, downloads }: StudioCon
       <div className="sd-phone-tabs">
         <TabBar tabs={TABS} open={open} last={last} controls={SHEET_ID} onToggle={toggle} />
       </div>
+
+      <AboutOverlay open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </main>
   );
 }

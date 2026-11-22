@@ -1,0 +1,9 @@
+.sd-tag {
+  display: inline-flex; align-items: center; height: 34px; padding: 0 16px;
+  border-radius: var(--sd-r-pill); background: var(--sd-tag); color: var(--sd-tag-ink);
+  font-size: var(--sd-text-md); font-weight: 500; white-space: nowrap;
+  animation: sd-float 4.2s ease-in-out infinite; animation-delay: var(--d, 0s);
+}
+.sd-tag-text { display: inline-block; animation: sd-swap var(--sd-slow) var(--sd-out); }
+
+@keyframes sd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }

@@ -2,7 +2,7 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes } from 'react';
 import { Icon, type Glyph } from '../Icon/Icon';
 import './Button.css';
 
-export type ButtonKind = 'quiet' | 'soft' | 'solid';
+export type ButtonKind = 'quiet' | 'soft' | 'solid' | 'float';
 
 interface BaseProps {
   label: string;

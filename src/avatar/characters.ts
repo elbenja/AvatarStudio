@@ -10,6 +10,8 @@ export interface Character {
   title: string;
   /** File name stem for downloads. */
   slug: string;
+  /** Signature colour, picked from the outfit. */
+  color: string;
   /** Label of the second move: the hockey bear skates, everyone else walks. */
   moveLabel: 'Skate' | 'Walk';
   /** 240px WebP for the picker. */
@@ -23,10 +25,10 @@ export interface Character {
 }
 
 export const CHARACTERS: readonly Character[] = [
-  { id: 'bear', name: 'Glace', title: 'Glace, the Montréal hockey bear', slug: 'glace', moveLabel: 'Skate', tile: asset('bear-tile.webp'), poster: asset('glace-poster.webp'), png: asset('glace.png'), html: asset('source/bear.html') },
-  { id: 'robot', name: 'Nova', title: 'Nova, the Toronto baseball robot', slug: 'nova', moveLabel: 'Walk', tile: asset('robot-tile.webp'), poster: asset('nova-poster.webp'), png: asset('nova.png'), html: asset('source/robot.html') },
-  { id: 'cat', name: 'Liberty', title: 'Liberty the cat', slug: 'liberty', moveLabel: 'Walk', tile: asset('cat-tile.webp'), poster: asset('liberty-poster.webp'), png: asset('liberty.png'), html: asset('source/cat.html') },
-  { id: 'pig', name: 'Chanchito', title: 'Chanchito', slug: 'chanchito', moveLabel: 'Walk', tile: asset('pig-tile.webp'), poster: asset('chanchito-poster.webp'), png: asset('chanchito.png'), html: asset('source/pig.html') },
+  { id: 'bear', name: 'Glace', title: 'Glace, the Montréal hockey bear', slug: 'glace', color: '#ef3b3b', moveLabel: 'Skate', tile: asset('bear-tile.webp'), poster: asset('glace-poster.webp'), png: asset('glace.png'), html: asset('source/bear.html') },
+  { id: 'robot', name: 'Nova', title: 'Nova, the Toronto baseball robot', slug: 'nova', color: '#4f86f0', moveLabel: 'Walk', tile: asset('robot-tile.webp'), poster: asset('nova-poster.webp'), png: asset('nova.png'), html: asset('source/robot.html') },
+  { id: 'cat', name: 'Liberty', title: 'Liberty the cat', slug: 'liberty', color: '#d8c2ad', moveLabel: 'Walk', tile: asset('cat-tile.webp'), poster: asset('liberty-poster.webp'), png: asset('liberty.png'), html: asset('source/cat.html') },
+  { id: 'pig', name: 'Chanchito', title: 'Chanchito', slug: 'chanchito', color: '#f6c445', moveLabel: 'Walk', tile: asset('pig-tile.webp'), poster: asset('chanchito-poster.webp'), png: asset('chanchito.png'), html: asset('source/pig.html') },
 ];
 
 export const characterById = (id: CharacterId): Character => CHARACTERS.find((c) => c.id === id) ?? CHARACTERS[0];

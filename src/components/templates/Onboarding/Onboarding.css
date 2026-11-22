@@ -1,0 +1,5 @@
+.sd-onb-behind { height: 100%; transition: filter 520ms var(--sd-out), transform 520ms var(--sd-out); }
+.sd-onb-behind.is-blurred { filter: blur(14px) saturate(0.9); transform: scale(1.02); pointer-events: none; }
+.sd-onb-scrim { position: fixed; inset: 0; z-index: 40; background: var(--sd-scrim); transition: opacity 420ms var(--sd-out); }
+.sd-onb-scrim.is-gone { opacity: 0; pointer-events: none; }
+.sd-onb-center { position: fixed; inset: 0; z-index: 41; display: grid; place-items: center; padding: 16px; }

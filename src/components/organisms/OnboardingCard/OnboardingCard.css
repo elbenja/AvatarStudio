@@ -1,0 +1,41 @@
+.sd-card {
+  position: relative; display: flex; flex-direction: column;
+  width: min(414px, calc(100vw - 32px)); padding: 20px 0 28px;
+  border-radius: var(--sd-r-sheet); background: var(--sd-card-bg); box-shadow: var(--sd-shadow-card);
+  overflow: hidden;
+}
+.sd-card-top { display: flex; justify-content: center; padding-top: 4px; }
+.sd-card-hero { position: relative; height: 300px; margin-top: 4px; }
+
+/* The live stage blends into the card: transparent shell, soft edge, a blurred hem at the feet. */
+.sd-card-stage {
+  position: absolute; inset: 20px 60px -20px; display: flex;
+  -webkit-mask-image: radial-gradient(ellipse 50% 50% at 50% 46%, #000 58%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 50% at 50% 46%, #000 58%, transparent 100%);
+}
+.sd-card-stage > * { flex: 1 1 auto; min-width: 0; }
+.sd-card-stage .sd-stage { background: transparent; }
+.sd-card-stage .sd-poster img { height: 101%; }
+.sd-card-hem {
+  position: absolute; left: 60px; right: 60px; bottom: 0; height: 70px; pointer-events: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 70%);
+  mask-image: linear-gradient(180deg, transparent, #000 70%);
+}
+
+.sd-card-tags { position: absolute; inset: 0; pointer-events: none; }
+.sd-card-tags > * { position: absolute; }
+.sd-card-tag-1 { right: 56px; top: 38px; }
+.sd-card-tag-2 { left: 58px; top: 146px; }
+.sd-card-tag-3 { right: 24px; top: 170px; }
+
+.sd-card-body { display: flex; flex-direction: column; gap: 8px; margin-top: -2px; padding: 0 58px; }
+.sd-card-title { margin: 0; font-size: 20px; font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; }
+.sd-card-text { margin: 0; font-size: var(--sd-text-base); line-height: 1.5; color: var(--sd-card-text); }
+.sd-card-foot { display: flex; justify-content: center; margin-top: 24px; }
+
+/* Shared by the About overlay and the first-visit onboarding. */
+.sd-card-in { animation: sd-card-in 560ms var(--sd-spring) both; }
+.sd-card-out { animation: sd-card-out 300ms var(--sd-out) both; }
+@keyframes sd-card-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes sd-card-out { to { opacity: 0; transform: translateY(10px) scale(0.97); } }

@@ -1,7 +1,44 @@
 # Avatar Studio · Silverdesk Lab
 
-A studio for four hand-sculpted Three.js characters. Pick a character, give it one of 8 emotions, make it walk
-(or skate), tune its speed, bounce and turn, then download it as a transparent PNG or a single HTML file.
+**Your brand deserves a face. Preferably a fluffy one.**
+
+Avatar Studio is a Silverdesk Lab side project: part playground, part proof. It started as an excuse to
+experiment, build and ship something fun in Three.js, and it doubles as the shop window for a real service:
+**custom 3D characters for brands that need some personality.**
+
+Most brand mascots today are a grey circle, a stock 3D blob, or something a generator spat out in five
+seconds. That's slop, and people can tell. The antidote is a character with a point of view: sculpted on
+purpose, with details that only make sense for *your* brand, alive in the browser instead of frozen in a PNG.
+
+## The service
+
+1. **Tell us about the brand.** The vibe, the colours, the weird details that make it yours.
+2. **We sculpt the character in code.** No 3D files, no textures: every shape is math, rigged, with a pose
+   and a motion for each of 8 emotions and 2 moves (idle, plus walk, skate, whatever fits).
+3. **You get it in about a week.** One self-contained HTML file, transparent PNGs of every emotion, and an
+   embed for your site, app, chatbot or voice agent.
+
+When the designer also writes the code, the vision doesn't get lost in the handoff. No templates, no
+dress-up menus.
+
+## The studio
+
+This repo is the studio itself, and the demo of the work. Meet the crew:
+
+| Character | Who | Moves |
+| --- | --- | --- |
+| **Glace** | Montréal hockey bear: red puffer, striped socks, chunky skates | Stand / Skate |
+| **Nova** | Toronto baseball robot: matte vinyl, LED face under the cap | Idle / Walk |
+| **Liberty** | A cat in a varsity jacket, with a tail with opinions | Idle / Walk |
+| **Chanchito** | The original. A fuzzy pig hood and zero chill when you tap him | Idle / Walk |
+
+Pick one, give it one of 8 emotions (Happy, Euphoric, Surprised, Curious, Sleepy, Sad, Embarrassed, Angry),
+make it walk or skate, tune speed, bounce and turn, then take it home as a transparent PNG or a single HTML
+file. Drag to spin, tap to hop.
+
+Want one for your brand? Hit **Get yours** in the studio, or go to [silverdesk.com](https://silverdesk.com).
+
+## Run it
 
 ```bash
 npm install
@@ -18,10 +55,11 @@ vite/avatar-source.ts    Turns each page into a mountable module at build time.
 src/avatar/              Runtime: mount a character into any element; the character catalog.
 src/styles/tokens.css    Design tokens: colour, radius, elevation, motion, type, touch size.
 src/components/
-  atoms/                 Icon, Button, IconButton, Slider, CharacterTile, EmotionKey, Section
-  molecules/             Logo, DownloadBar, Rail, CharacterPicker, EmotionPicker, MotionSwitch
-  organisms/             Stage, MotionPanel, Sidebar, TabBar, BottomSheet
-  templates/             DesktopStudio, MobileStudio: layout only, no studio state
+  atoms/                 Icon, Button, IconButton, Slider, CharacterTile, EmotionKey, Section,
+                         CollapseToggle, Swatch, Tag, Tooltip
+  molecules/             Logo, DownloadBar, Rail, CharacterPicker, EmotionPicker, MotionSwitch, SwatchRow
+  organisms/             Stage, MotionPanel, Sidebar, TabBar, BottomSheet, OnboardingCard, AboutOverlay
+  templates/             DesktopStudio, MobileStudio, Onboarding: layout only, no studio state
 src/state/               One reducer for the studio, and the controller both templates receive
 src/pages/Studio.tsx     Owns the state and picks the template at 960px
 ```
@@ -60,4 +98,3 @@ off.
 ## Not done yet
 
 - "Get yours" and the "+" links point at silverdesk.com until the landing page exists (`VITE_GET_YOURS_URL`).
-- The About button in the design has no destination, so the rail leaves it out until it has one.

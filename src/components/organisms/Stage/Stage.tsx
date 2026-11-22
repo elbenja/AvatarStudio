@@ -9,10 +9,16 @@ export interface StageProps {
   who: CharacterId;
   mood: Mood;
   moving: boolean;
-  speed: number;
-  bounce: number;
+  speed?: number;
+  bounce?: number;
   turn: number;
-  paused: boolean;
+  paused?: boolean;
+  /** False keeps the poster and holds off sculpting, e.g. while the studio waits behind the onboarding card. */
+  live?: boolean;
+  /** Clear colour of the 3D canvas. */
+  background?: string;
+  /** A colour glint sweeps across when the character changes. */
+  sweep?: boolean;
   /** Head room around the character (1 = tight). */
   pad?: number;
   onTurn?: (degrees: number) => void;
@@ -45,7 +51,7 @@ function posterPainted(img: HTMLImageElement | null): Promise<void> {
  * its place; if WebGL is missing or the sculpt fails, the poster simply stays.
  */
 export function Stage(props: StageProps) {
-  const { who, pad = 1.12 } = props;
+  const { who, pad = 1.12, live = true, background = BACKGROUND, sweep: sweepOn = true } = props;
   const latest = useRef(props);
   latest.current = props;
 
@@ -66,7 +72,7 @@ export function Stage(props: StageProps) {
   /** Only the character on stage keeps rendering; the others hold their last frame. */
   const run = () => {
     for (const [id, h] of Object.entries(handles.current) as [CharacterId, AvatarHandle][]) {
-      if (id === latest.current.who && visible.current && !document.hidden) h.resume();
+      if (id === latest.current.who && latest.current.live !== false && visible.current && !document.hidden) h.resume();
       else h.pause();
     }
   };
@@ -77,7 +83,7 @@ export function Stage(props: StageProps) {
     if (!h) return;
     const p = latest.current;
     const was = applied.current[id];
-    const now: Applied = { mood: p.mood, moving: p.moving, speed: p.paused ? 0 : p.speed, bounce: p.bounce, turn: Math.round(p.turn) };
+    const now: Applied = { mood: p.mood, moving: p.moving, speed: p.paused ? 0 : p.speed ?? 1, bounce: p.bounce ?? 1, turn: Math.round(p.turn) };
     if (now.mood !== was?.mood) h.setEmotion(now.mood);
     if (now.moving !== was?.moving) h.setMode(now.moving);
     if (now.speed !== was?.speed) h.setSpeed(now.speed);
@@ -112,9 +118,9 @@ export function Stage(props: StageProps) {
   // A new character on stage: sweep a glint across, then boot it if it has never been on.
   useEffect(() => {
     run();
-    if (who !== firstWho.current) setSweep((n) => n + 1);
+    if (who !== firstWho.current && sweepOn) setSweep((n) => n + 1);
     firstWho.current = who;
-    if (handles.current[who] || booting.current[who] || failed[who]) return;
+    if (!live || handles.current[who] || booting.current[who] || failed[who]) return;
 
     let cancelled = false;
     const timer = window.setTimeout(async () => {
@@ -124,7 +130,7 @@ export function Stage(props: StageProps) {
         const slot = slots.current[who];
         if (cancelled || gone.current || !slot) { booting.current[who] = false; return; }
         handles.current[who] = mountAvatar(slot, who, mod, {
-          background: BACKGROUND,
+          background,
           pad,
           onReady: () => { if (!gone.current) setReady((r) => ({ ...r, [who]: true })); },
           onTurn: (deg) => { if (latest.current.who === who) latest.current.onTurn?.(deg); },
@@ -146,14 +152,14 @@ export function Stage(props: StageProps) {
     }, BOOT_DELAY_MS);
     return () => { cancelled = true; clearTimeout(timer); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [who]);
+  }, [who, live]);
 
   // Every render: forward the controls to the character on stage.
   useEffect(() => apply(who));
 
   const character = characterById(who);
   const isReady = !!ready[who];
-  const waiting = !isReady && !failed[who];
+  const waiting = live && !isReady && !failed[who];
 
   return (
     <div ref={rootRef} className="sd-stage" role="img" aria-label={`${character.title}, live 3D character. Drag to turn, tap to hop.`}>

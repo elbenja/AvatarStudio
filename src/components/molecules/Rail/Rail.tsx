@@ -1,31 +1,35 @@
 import { IconButton } from '../../atoms/IconButton/IconButton';
 import './Rail.css';
 
-export interface RailProps {
+interface StageTools {
+  compact?: false;
   paused: boolean;
   motionOpen: boolean;
   onNextEmotion: () => void;
   onResetView: () => void;
   onTogglePause: () => void;
   onToggleMotion: () => void;
-  /** The About button shows only when there is somewhere for it to go. */
-  onAbout?: () => void;
 }
 
-/** Vertical toolbar of stage tools. */
-export function Rail({ paused, motionOpen, onNextEmotion, onResetView, onTogglePause, onToggleMotion, onAbout }: RailProps) {
+/** Compact: About only, for phones, where the stage tools live in the sheet. */
+interface AboutOnly { compact: true }
+
+export type RailProps = (StageTools | AboutOnly) & { onAbout: () => void };
+
+/** Vertical toolbar of stage tools, ending with About. */
+export function Rail(props: RailProps) {
   return (
-    <div className="sd-rail" role="toolbar" aria-label="Stage tools" aria-orientation="vertical">
-      <IconButton glyph="smile" label="Next emotion" onClick={onNextEmotion} />
-      <IconButton glyph="turn" label="Reset view" onClick={onResetView} />
-      <IconButton glyph={paused ? 'play' : 'pause'} label={paused ? 'Play' : 'Pause'} toggle on={paused} onClick={onTogglePause} />
-      <IconButton glyph="curve" label="Motion" toggle on={motionOpen} aria-controls="sd-motion-panel" aria-expanded={motionOpen} onClick={onToggleMotion} />
-      {onAbout && (
+    <div className={'sd-rail' + (props.compact ? ' sd-rail--compact' : '')} role="toolbar" aria-label="Stage tools" aria-orientation="vertical">
+      {!props.compact && (
         <>
+          <IconButton tipSide="right" glyph="smile" label="Next emotion" onClick={props.onNextEmotion} />
+          <IconButton tipSide="right" glyph="turn" label="Reset view" onClick={props.onResetView} />
+          <IconButton tipSide="right" glyph={props.paused ? 'play' : 'pause'} label={props.paused ? 'Play' : 'Pause'} toggle on={props.paused} onClick={props.onTogglePause} />
+          <IconButton tipSide="right" glyph="curve" label="Motion" toggle on={props.motionOpen} aria-controls="sd-motion-panel" aria-expanded={props.motionOpen} onClick={props.onToggleMotion} />
           <div className="sd-rail-rule" role="separator" />
-          <IconButton glyph="about" label="About this project" onClick={onAbout} />
         </>
       )}
+      <IconButton tipSide="right" glyph="about" label="About this project" onClick={props.onAbout} />
     </div>
   );
 }

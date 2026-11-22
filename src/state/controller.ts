@@ -23,6 +23,9 @@ export interface StudioController {
   downloads: { png: SaveState; html: SaveState; savePng: () => void; saveHtml: () => void };
 }
 
+/** A layout template: the controller, plus whether the stage may start its 3D yet. */
+export type StudioTemplateProps = StudioController & { live?: boolean };
+
 export function useStudioController(onDownloaded?: () => void): StudioController {
   const calm = usePrefersReducedMotion();
   const [state, dispatch] = useStudio(calm);
