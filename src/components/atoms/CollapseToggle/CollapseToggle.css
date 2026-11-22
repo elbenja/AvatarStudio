@@ -1,0 +1,10 @@
+/* Shares .sd-add (Section.css) with the "+" link; only the folding glyph is its own. */
+.sd-add svg {
+  display: block; width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round;
+  transition: transform var(--sd-slow) var(--sd-spring);
+}
+/* The vertical stroke folds away: "+" becomes "−" while open. */
+.sd-add-v { transform-origin: 12px 12px; transition: transform var(--sd-slow) var(--sd-spring); }
+.sd-add.is-open .sd-add-v { transform: scaleY(0); }
+.sd-add.is-open:hover svg { transform: scaleX(1.15); }
+.sd-add:not(.is-open):hover svg { transform: rotate(90deg); }

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import type { StudioController } from '../../../state/controller';
+import type { StudioTemplateProps } from '../../../state/controller';
 import { Logo } from '../../molecules/Logo/Logo';
 import { DownloadBar } from '../../molecules/DownloadBar/DownloadBar';
 import { Rail } from '../../molecules/Rail/Rail';
+import { AboutOverlay } from '../../organisms/AboutOverlay/AboutOverlay';
 import { MotionPanel } from '../../organisms/MotionPanel/MotionPanel';
 import { Sidebar } from '../../organisms/Sidebar/Sidebar';
 import { Stage } from '../../organisms/Stage/Stage';
@@ -11,14 +12,15 @@ import './DesktopStudio.css';
 const PANEL_ID = 'sd-motion-panel';
 
 /** Full-bleed stage with floating chrome: logo and downloads on top, tools on the left, controls on the right. */
-export function DesktopStudio({ state, actions, downloads }: StudioController) {
-  const [motionOpen, setMotionOpen] = useState(true);
+export function DesktopStudio({ state, actions, downloads, live }: StudioTemplateProps) {
+  const [motionOpen, setMotionOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const toggleMotion = () => setMotionOpen((o) => !o);
 
   return (
     <main className="sd-desk">
       <div className="sd-desk-stage">
-        <Stage {...state} pad={1.2} onTurn={actions.setTurn} onMood={actions.setMood} />
+        <Stage {...state} live={live} pad={1.2} onTurn={actions.setTurn} onMood={actions.setMood} />
       </div>
 
       <div className="sd-desk-logo sd-in">
@@ -40,6 +42,7 @@ export function DesktopStudio({ state, actions, downloads }: StudioController) {
             onResetView={actions.resetView}
             onTogglePause={actions.togglePause}
             onToggleMotion={toggleMotion}
+            onAbout={() => setAboutOpen(true)}
           />
         </div>
       </div>
@@ -67,6 +70,8 @@ export function DesktopStudio({ state, actions, downloads }: StudioController) {
           onMoving={actions.setMoving}
         />
       </div>
+
+      <AboutOverlay open={aboutOpen} onClose={() => setAboutOpen(false)} />
     </main>
   );
 }

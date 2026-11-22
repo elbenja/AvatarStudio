@@ -3,7 +3,6 @@ import { CHARACTERS } from '../../../avatar/characters';
 import type { CharacterId } from '../../../avatar/types';
 import { CharacterTile } from '../../atoms/CharacterTile/CharacterTile';
 import { Section } from '../../atoms/Section/Section';
-import { GET_YOURS_URL } from '../../../config';
 import './CharacterPicker.css';
 
 export interface CharacterPickerProps {
@@ -15,7 +14,7 @@ export interface CharacterPickerProps {
 
 export function CharacterPicker({ who, onPick, cols = 2 }: CharacterPickerProps) {
   return (
-    <Section title="Character" add={{ href: GET_YOURS_URL, label: 'Get your own character' }}>
+    <Section title="Character" collapsible>
       <div className="sd-chars" style={{ '--cols': cols } as CSSProperties}>
         {CHARACTERS.map((c) => (
           <CharacterTile key={c.id} character={c} on={c.id === who} onPick={(picked) => onPick(picked.id)} />

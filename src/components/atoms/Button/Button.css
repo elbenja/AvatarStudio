@@ -27,6 +27,9 @@
 }
 .sd-btn--solid:hover::after { transform: translateX(320%) skewX(-18deg); transition: transform 640ms var(--sd-out); }
 
+.sd-btn--float { padding: 0 18px; background: var(--sd-surface); box-shadow: var(--sd-shadow-pill); }
+.sd-btn--float:hover { background: var(--sd-canvas); box-shadow: var(--sd-shadow-float); }
+
 .sd-btn--wide { width: 100%; height: var(--sd-hit); }
 
 .sd-btn .sd-ico { transition: transform var(--sd-med) var(--sd-out); }

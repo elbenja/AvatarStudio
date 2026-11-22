@@ -1,5 +1,7 @@
-import type { ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
+import { CollapseToggle } from '../CollapseToggle/CollapseToggle';
 import { Icon } from '../Icon/Icon';
+import { Tooltip } from '../Tooltip/Tooltip';
 import './Section.css';
 
 export interface SectionProps {
@@ -8,13 +10,17 @@ export interface SectionProps {
   meta?: string;
   /** A "+" link in the corner: where to get more of this. */
   add?: { href: string; label: string };
+  /** Adds a +/− toggle in the corner that folds the body away. Starts open. */
+  collapsible?: boolean;
   children: ReactNode;
 }
 
 /** A titled block of the sidebar or sheet. Layout only; the content decides the rest. */
-export function Section({ title, meta, add, children }: SectionProps) {
+export function Section({ title, meta, add, collapsible, children }: SectionProps) {
+  const [open, setOpen] = useState(true);
+  const bodyId = useId();
   return (
-    <section className="sd-sec" aria-label={title}>
+    <section className={'sd-sec' + (open ? '' : ' is-collapsed')} aria-label={title}>
       <div className="sd-sec-head">
         <span className="sd-sec-title">
           {title}
@@ -23,13 +29,18 @@ export function Section({ title, meta, add, children }: SectionProps) {
             <span key={meta} className="sd-sec-meta" aria-live="polite"> · {meta}</span>
           )}
         </span>
-        {add && (
-          <a className="sd-add" href={add.href} aria-label={add.label} title={add.label}>
-            <Icon glyph="plus" />
-          </a>
+        {add && !collapsible && (
+          <Tooltip label={add.label} side="left">
+            <a className="sd-add" href={add.href} aria-label={add.label}>
+              <Icon glyph="plus" />
+            </a>
+          </Tooltip>
         )}
+        {collapsible && <CollapseToggle open={open} section={title} controls={bodyId} onToggle={setOpen} />}
       </div>
-      {children}
+      {collapsible ? (
+        <div id={bodyId} className="sd-sec-body" inert={!open}><div>{children}</div></div>
+      ) : children}
     </section>
   );
 }
