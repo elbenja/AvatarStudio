@@ -1,13 +1,13 @@
 # Telepa prototype plan
 
-Telepa is a standalone Silverdesk Lab game. The player silently picks an everyday object, a public figure, or a fictional character. The AI chooses every question and makes the guess. Build chat first, add voice next, and connect the 3D avatar after voice works.
+Telepa is a standalone Silverdesk Lab game. The player silently picks an object, an animal, a person, or a fictional character. The AI works out the category, chooses every question, and makes the guess. Build chat first, add voice next, and connect the 3D avatar after voice works.
 
 ## 1. Chat
 
-- Build a single screen with category selection, a transcript, quick answers, optional typed clues, question count, and a **Ruled out** list. Confirm a guess, correct the last answer, or end and restart a round.
+- Build a single screen with Start game, a transcript, quick answers, optional typed clues, question count, and a **Ruled out** list. Confirm a guess, correct the last answer, or end and restart a round.
 - Start the two-minute countdown when the opening question appears. Keep play available at zero. Use twelve questions as a separate prototype rule, then ask the AI for its best guess or let it concede.
 - Run GPT-6 Luna in the Responses API with reasoning effort set to none. Use one request per turn and a structured response with the next action, display text, and explicitly ruled out categories. The app owns the round history. Correcting an answer restores the prior question and clues before asking the model again.
-- Ask short yes/no questions that separate plausible answers, including on the first turn. Refer to a single target as “this person” or “the character.” Guess when the clues support a clear candidate. Treat unsure answers as uncertain. Keep the AI on the game, use age-appropriate language, and avoid private people, personal data, or claims of mind reading.
+- Ask short yes/no questions that separate plausible answers, including on the first turn. Refer to a single target as “this person” or “the character.” Guess when the clues support a clear candidate. Treat unsure answers as uncertain. Use relationships such as “your teacher” or “your dog” when guessing someone the player knows or a pet. Keep private names and identifying details out of the game.
 - Keep the API key on a loopback-only server and avoid saving audio or transcripts in the app. Share the disclosure before play. Run a clearly labeled scripted sample when no key is configured.
 
 Verification: complete and restart a round, correct an answer and check that the exclusion is removed, retry an unsuccessful request, and answer after the timer reaches zero.

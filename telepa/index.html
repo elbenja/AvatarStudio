@@ -16,18 +16,17 @@
 
     <div id="setup" class="setup">
       <h1>Think of <em>something.</em></h1>
-      <p>Keep it to yourself. Telepa asks the questions and tries to guess.</p>
-      <div class="choices" id="categories" hidden>
-        <button data-category="object">An object <span>↗</span></button>
-        <button data-category="person">A public figure or character <span>↗</span></button>
+      <p>Pick an object, person, or animal. Keep it a secret and let Telepa guess.</p>
+      <div class="choices">
+        <button id="start" type="button" hidden>Start game <span>↗</span></button>
+        <button id="sample" class="sample" type="button">Try a sample round <span>↗</span></button>
       </div>
-      <button id="sample" class="sample" type="button">Try a sample round <span>↗</span></button>
-      <p class="note" id="notice">Telepa guesses from your clues. Choose a public figure or fictional character for a person. Keep personal details private.</p>
+      <p class="note" id="notice">Your teacher, your mom, or your dog counts. Keep private names and details to yourself.</p>
     </div>
 
     <div id="game" class="game" hidden>
       <div class="game-heading">
-        <div><span id="category"></span><h1 id="round-title" tabindex="-1">Your round</h1></div>
+        <div><span id="round-mode" hidden>Scripted sample · Think of a kettle</span><h1 id="round-title" tabindex="-1">Your round</h1></div>
         <div class="clock"><time id="timer">2:00</time><small id="timer-label">Time goal</small></div>
       </div>
       <div class="board">

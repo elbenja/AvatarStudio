@@ -99,7 +99,7 @@ async function advance(answer) {
   render();
   try {
     const turns = history.map(({ move, answer }) => ({ kind: move.kind, text: move.text, answer }));
-    const move = active.sample ? sampleMove(turns) : await request('/api/turn', { category: active.category, turns });
+    const move = active.sample ? sampleMove(turns) : await request('/api/turn', { turns });
     if (round !== active) return;
     if (!active.sample) {
       const previous = active.current?.ruledOut ?? [];
@@ -125,11 +125,11 @@ async function advance(answer) {
   }
 }
 
-function start(category, sample) {
-  round = { category, sample, history: [], current: null };
+function start(sample) {
+  round = { sample, history: [], current: null };
   $('setup').hidden = true;
   $('game').hidden = false;
-  $('category').textContent = sample ? 'Scripted sample · Think of a kettle' : category === 'object' ? 'An object' : 'A person';
+  $('round-mode').hidden = !sample;
   $('timer').textContent = '2:00';
   $('timer-label').textContent = 'Time goal';
   $('round-title').focus();
@@ -180,18 +180,15 @@ $('end').addEventListener('click', () => {
   $('answer').value = '';
   $('game').hidden = true;
   $('setup').hidden = false;
-  ($('categories').hidden ? $('sample') : $('categories').querySelector('button')).focus();
+  ($('start').hidden ? $('sample') : $('start')).focus();
 });
 $('retry').addEventListener('click', () => retry?.());
-$('sample').addEventListener('click', () => start('object', true));
-$('categories').addEventListener('click', event => {
-  const category = event.target.closest('button')?.dataset.category;
-  if (category) start(category, false);
-});
+$('sample').addEventListener('click', () => start(true));
+$('start').addEventListener('click', () => start(false));
 
 try {
   const { live } = await request('/api/status');
-  $('categories').hidden = !live;
+  $('start').hidden = !live;
   $('status').textContent = live ? 'Live chat' : 'Sample mode';
   if (live) $('notice').append(' Live clues are sent to OpenAI.');
 } catch {
