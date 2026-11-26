@@ -65,7 +65,7 @@ async function readTurn(req) {
   return { category, turns, questions, guesses };
 }
 
-async function chooseMove(round) {
+async function chooseMove(round, maxOutputTokens = 240) {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
@@ -74,19 +74,68 @@ async function chooseMove(round) {
       model: 'gpt-6-luna',
       reasoning: { effort: 'none' },
       store: false,
-      max_output_tokens: 240,
+      max_output_tokens: maxOutputTokens,
       instructions,
       input: JSON.stringify({ ...round, questionsRemaining: 12 - round.questions }),
       text: { format: { type: 'json_schema', name: 'telepa_move', strict: true, schema } },
     }),
   });
-  if (response.status === 401 || response.status === 403) return { keyError: true };
-  if (!response.ok) throw new Error('OpenAI request failed');
-  const result = await response.json();
-  const output = result.output?.flatMap(item => item.content ?? [])
-    .find(item => item.type === 'output_text');
-  if (result.status !== 'completed' || !output) throw new Error('No completed move');
-  const move = JSON.parse(output.text);
+  const requestId = response.headers.get('x-request-id');
+  if (!response.ok) {
+    const details = await response.json().catch(() => null);
+    const code = details?.error?.code;
+    const safeCode = typeof code === 'string' && /^[a-z0-9_]{1,64}$/.test(code) ? code : undefined;
+    console.warn('Telepa upstream error', { status: response.status, code: safeCode, requestId });
+    if (response.status === 401 || response.status === 403) {
+      return { failure: 'Check your OpenAI project key and permissions.', status: 503 };
+    }
+    if (code === 'insufficient_quota' || code === 'billing_hard_limit_reached') {
+      return { failure: 'OpenAI usage is blocked. Check the project’s billing and usage limits.', status: 503 };
+    }
+    if (response.status === 429) {
+      return { failure: 'OpenAI is limiting requests. Wait a moment, then retry this turn.', status: 429 };
+    }
+    return { failure: 'OpenAI could not complete this turn. Retry in a moment.', status: 502 };
+  }
+  const result = await response.json().catch(() => null);
+  if (!result) {
+    console.warn('Telepa unreadable API response', { requestId });
+    return { failure: 'OpenAI returned an unreadable response. Try again.', status: 502 };
+  }
+  const outputs = result.output?.flatMap(item => item.content ?? [])
+    .filter(item => item.type === 'output_text') ?? [];
+  if (result.status !== 'completed' || outputs.length === 0) {
+    const refusal = result.output?.some(item => item.content?.some(part => part.type === 'refusal'));
+    console.warn('Telepa missing move', {
+      status: result.status, reason: result.incomplete_details?.reason, refusal, requestId,
+    });
+    if (refusal || result.incomplete_details?.reason === 'content_filter') {
+      return { failure: 'Telepa couldn’t use that clue. Try a different answer.', status: 422 };
+    }
+    return {
+      failure: 'OpenAI returned an unfinished turn. Try again.',
+      status: 502,
+      retryable: result.incomplete_details?.reason === 'max_output_tokens',
+    };
+  }
+  const output = outputs.at(-1).text.trim();
+  let move;
+  try {
+    move = JSON.parse(output);
+  } catch {
+    if (outputs.length > 1) {
+      try { move = JSON.parse(outputs.map(part => part.text).join('')); }
+      catch { /* Retry below if no complete JSON object was returned. */ }
+    }
+  }
+  if (!move) {
+    console.warn('Telepa malformed move', {
+      requestId, parts: outputs.length, length: output.length,
+      startsWithObject: output.startsWith('{'), endsWithObject: output.endsWith('}'),
+      fenced: output.startsWith('```'),
+    });
+    return { failure: 'Telepa received an unreadable move. Retry this turn.', status: 502, retryable: true };
+  }
   if (!schema.properties.kind.enum.includes(move.kind) || typeof move.text !== 'string' ||
       !move.text.trim() || !Array.isArray(move.ruledOut) ||
       !move.ruledOut.every(item => typeof item === 'string')) throw new Error('Invalid move');
@@ -121,10 +170,19 @@ createServer(async (req, res) => {
     inFlight = true;
     recentRequests.push(now);
     try {
-      const move = await chooseMove(round);
-      if (move.keyError) return json(res, 503, { error: 'Check your OpenAI project key and permissions.' });
+      let move = await chooseMove(round);
+      if (move.retryable && recentRequests.length < 30 && !res.destroyed) {
+        recentRequests.push(Date.now());
+        move = await chooseMove(round, 400);
+      }
+      if (move.failure) return json(res, move.status, { error: move.failure });
       return json(res, 200, move);
-    } catch {
+    } catch (error) {
+      if (error.name === 'TimeoutError') {
+        console.warn('Telepa upstream timeout');
+        return json(res, 504, { error: 'OpenAI took too long. Retry this turn.' });
+      }
+      console.warn('Telepa turn failed', { type: error.name, code: error.cause?.code });
       return json(res, 502, { error: 'Telepa couldn\'t finish that turn. Try again.' });
     } finally {
       inFlight = false;
