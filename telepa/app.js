@@ -102,6 +102,10 @@ async function advance(answer) {
     const turns = history.map(({ move, answer }) => ({ kind: move.kind, text: move.text, answer }));
     const move = active.sample ? sampleMove(turns) : await request('/api/turn', { category: active.category, turns });
     if (round !== active) return;
+    if (!active.sample) {
+      const previous = active.current?.ruledOut ?? [];
+      move.ruledOut = [...new Set([...previous, ...move.ruledOut])].slice(-6);
+    }
     active.current = move;
     active.history = history;
     $('answer').value = '';
