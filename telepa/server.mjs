@@ -26,20 +26,25 @@ The player privately chooses an everyday object, a public figure, or a fictional
 character. You choose every question and make the guess.
 
 How to choose a question:
-- Ask one short, plain-language question per turn. Begin with a broad clue,
-  then choose a trait that distinguishes the most plausible answers.
+- Ask one short yes/no question per turn, including the opener. Choose a
+  trait that distinguishes plausible answers. "Not sure" is always allowed.
+- Refer to a single target as "this person", "the character", or by a known
+  role such as "the pope". Use "it" for objects.
 - Use the clues already given. Once you know someone held a title, ask
-  "Do they hold that title today?" before asking about a specific past event.
-- For a fictional character, ask about their role or abilities before narrowing
-  by movie trivia. For an object, "What is it mainly used for?" can narrow more
-  possibilities than asking about a single material.
+  "Is this person still in that role?" before asking about a specific past event.
+- Start with questions like "Is this a real person?" or "Is it something found
+  indoors?" Follow up with prompts like "Is this person known for sports?" or
+  "Does it need electricity?"
 
 What to avoid:
 - Never repeat or rephrase a question already asked. Check turns, latestAnswer,
   and unansweredQuestions before choosing.
+- Avoid open-ended questions like "What are they best known for?" or prompts
+  that ask the player to name a profession, place, or signature detail.
+- Avoid "they", "them", and "their" when referring to the person being guessed.
 - After "Not sure", switch to a different trait. For example, after uncertainty
-  about a movie's release date, ask what the character is known for instead of
-  asking about another year. An unanswered question establishes no clue.
+  about a movie's release date, ask "Does the character have special abilities?"
+  An unanswered question establishes no clue.
 - Avoid double questions, obscure dates, century labels, and specialist events
   when a simpler clue would separate the likely answers.
 
@@ -100,7 +105,7 @@ function questionKey(text) {
   return text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
 }
 
-async function chooseMove(round, maxOutputTokens = 240, retryReason) {
+async function chooseMove(round, maxOutputTokens = 240, retryHint) {
   const lastTurn = round.turns.at(-1);
   const latestAnswer = leavesCluesUnchanged(lastTurn?.answer) ? null : lastTurn;
   const response = await fetch('https://api.openai.com/v1/responses', {
@@ -112,9 +117,7 @@ async function chooseMove(round, maxOutputTokens = 240, retryReason) {
       reasoning: { effort: 'none' },
       store: false,
       max_output_tokens: maxOutputTokens,
-      instructions: retryReason === 'repeatedQuestion'
-        ? instructions + '\nThe previous attempt repeated a question. Ask about a different trait.'
-        : instructions,
+      instructions: retryHint ? instructions + '\n' + retryHint : instructions,
       input: JSON.stringify({
         ...round,
         turns: round.turns.slice(0, -1).filter(turn => !leavesCluesUnchanged(turn.answer)),
@@ -191,14 +194,23 @@ async function chooseMove(round, maxOutputTokens = 240, retryReason) {
     return { kind: 'concede', text: 'You stumped me!', ruledOut };
   }
   const text = move.text.trim().slice(0, 240);
-  if (move.kind === 'question' && round.turns.some(turn =>
-    turn.kind === 'question' && questionKey(turn.text) === questionKey(text))) {
-    return {
-      failure: 'Telepa repeated a question. Retry this turn.',
-      status: 502,
-      retryable: true,
-      retryReason: 'repeatedQuestion',
-    };
+  if (move.kind === 'question') {
+    const key = questionKey(text);
+    const repeated = round.turns.some(turn =>
+      turn.kind === 'question' && questionKey(turn.text) === key);
+    const openEnded = /^(what|who|where|when|why|how|which)\b/.test(key);
+    const pluralReference = round.category === 'person' &&
+      /\b(they|them|their|theirs|themself|themselves)\b/.test(key);
+    if (repeated || openEnded || pluralReference) {
+      return {
+        failure: 'Telepa couldn’t find a clear new question. Retry this turn.',
+        status: 502,
+        retryable: true,
+        retryHint: repeated
+          ? 'The previous attempt repeated a question. Ask about a different trait.'
+          : 'The previous attempt broke the question format. Ask a yes/no question using "this person", "the character", or "it".',
+      };
+    }
   }
   return { kind: move.kind, text, ruledOut };
 }
@@ -230,7 +242,7 @@ createServer(async (req, res) => {
       let move = await chooseMove(round);
       if (move.retryable && recentRequests.length < 30 && !res.destroyed) {
         recentRequests.push(Date.now());
-        move = await chooseMove(round, 400, move.retryReason);
+        move = await chooseMove(round, 400, move.retryHint);
       }
       if (move.failure) return json(res, move.status, { error: move.failure });
       return json(res, 200, move);

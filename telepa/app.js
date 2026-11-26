@@ -16,8 +16,8 @@ async function request(path, data) {
 
 function sampleMove(turns) {
   const exit = { kind: 'concede', text: 'You stumped me!', ruledOut: [] };
-  if (turns.length === 0) return { kind: 'question', text: 'Where would you usually find it?', ruledOut: [] };
-  if (!/kitchen/i.test(turns[0].answer)) return exit;
+  if (turns.length === 0) return { kind: 'question', text: 'Would you usually find it in a kitchen?', ruledOut: [] };
+  if (turns[0].answer.toLowerCase() !== 'yes') return exit;
   if (turns.length === 1) return { kind: 'question', text: 'Is it something you eat?', ruledOut: [] };
   if (turns[1].answer.toLowerCase() !== 'no') return exit;
   const ruledOut = ['Food'];
@@ -51,7 +51,7 @@ function line(role, text) {
 }
 
 function render() {
-  const { current, history, done, sample, pending } = round;
+  const { current, history, done, pending } = round;
   const messages = history.flatMap(({ move, answer }) => [
     line('Telepa', move.kind === 'guess' ? `My guess: ${move.text}` : move.text),
     line('You', answer),
@@ -76,12 +76,11 @@ function render() {
   const canAnswer = current && !done;
   $('answer-controls').hidden = !canAnswer;
   $('answer-form').hidden = current?.kind !== 'question';
-  $('answer').placeholder = sample && history.length === 0 ? 'Type “in the kitchen”…' : 'Type a short clue…';
   $('answer').disabled = pending;
   $('answer-form').querySelector('button').disabled = pending;
   const labels = current?.kind === 'guess'
     ? ['That’s right', 'Wrong guess']
-    : questions === 1 ? ['Not sure'] : ['Yes', 'No', 'Not sure'];
+    : ['Yes', 'No', 'Not sure'];
   $('quick').replaceChildren(...labels.map(label => {
     const button = document.createElement('button');
     button.type = 'button';
