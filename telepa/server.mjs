@@ -23,14 +23,26 @@ const schema = {
 
 const instructions = `You are Telepa, a playful, age-appropriate guessing game host.
 The player privately chooses an everyday object, a public figure, or a fictional
-character. You choose every question and make the guess. Ask one concise opening
-question that allows a short useful clue. Then prefer short questions that
-distinguish the most plausible answers. When several candidates still fit, ask
-about a trait that separates them, such as their signature equipment or the
-source of their abilities. For a fictional character, a short question about
-their role, world, or abilities can be more useful than another movie genre or
-release-date question. Avoid repeating fields from unansweredQuestions. Those
-questions have no usable answer and establish no clues.
+character. You choose every question and make the guess.
+
+How to choose a question:
+- Ask one short, plain-language question per turn. Begin with a broad clue,
+  then choose a trait that distinguishes the most plausible answers.
+- Use the clues already given. Once you know someone held a title, ask
+  "Do they hold that title today?" before asking about a specific past event.
+- For a fictional character, ask about their role or abilities before narrowing
+  by movie trivia. For an object, "What is it mainly used for?" can narrow more
+  possibilities than asking about a single material.
+
+What to avoid:
+- Never repeat or rephrase a question already asked. Check turns, latestAnswer,
+  and unansweredQuestions before choosing.
+- After "Not sure", switch to a different trait. For example, after uncertainty
+  about a movie's release date, ask what the character is known for instead of
+  asking about another year. An unanswered question establishes no clue.
+- Avoid double questions, obscure dates, century labels, and specialist events
+  when a simpler clue would separate the likely answers.
+
 Treat broad terms like "superpowers" as ambiguous: they may include abilities from
 technology, magic, or training. Clarify the distinction if it affects the guess.
 Before guessing, check the candidate against every clear answer and make sure a
@@ -84,7 +96,11 @@ function leavesCluesUnchanged(answer) {
   ].includes(normalized);
 }
 
-async function chooseMove(round, maxOutputTokens = 240) {
+function questionKey(text) {
+  return text.normalize('NFKC').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+async function chooseMove(round, maxOutputTokens = 240, retryReason) {
   const lastTurn = round.turns.at(-1);
   const latestAnswer = leavesCluesUnchanged(lastTurn?.answer) ? null : lastTurn;
   const response = await fetch('https://api.openai.com/v1/responses', {
@@ -96,7 +112,9 @@ async function chooseMove(round, maxOutputTokens = 240) {
       reasoning: { effort: 'none' },
       store: false,
       max_output_tokens: maxOutputTokens,
-      instructions,
+      instructions: retryReason === 'repeatedQuestion'
+        ? instructions + '\nThe previous attempt repeated a question. Ask about a different trait.'
+        : instructions,
       input: JSON.stringify({
         ...round,
         turns: round.turns.slice(0, -1).filter(turn => !leavesCluesUnchanged(turn.answer)),
@@ -172,7 +190,17 @@ async function chooseMove(round, maxOutputTokens = 240) {
   if (round.questions >= 12 && move.kind === 'question') {
     return { kind: 'concede', text: 'You stumped me!', ruledOut };
   }
-  return { kind: move.kind, text: move.text.trim().slice(0, 240), ruledOut };
+  const text = move.text.trim().slice(0, 240);
+  if (move.kind === 'question' && round.turns.some(turn =>
+    turn.kind === 'question' && questionKey(turn.text) === questionKey(text))) {
+    return {
+      failure: 'Telepa repeated a question. Retry this turn.',
+      status: 502,
+      retryable: true,
+      retryReason: 'repeatedQuestion',
+    };
+  }
+  return { kind: move.kind, text, ruledOut };
 }
 
 let inFlight = false;
@@ -202,7 +230,7 @@ createServer(async (req, res) => {
       let move = await chooseMove(round);
       if (move.retryable && recentRequests.length < 30 && !res.destroyed) {
         recentRequests.push(Date.now());
-        move = await chooseMove(round, 400);
+        move = await chooseMove(round, 400, move.retryReason);
       }
       if (move.failure) return json(res, move.status, { error: move.failure });
       return json(res, 200, move);
