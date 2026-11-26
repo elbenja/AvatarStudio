@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Telepa · Silverdesk Lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand"><i aria-hidden="true">✳</i> Telepa<span>Silverdesk Lab</span></div>
+      <div class="status" id="status"></div>
+    </header>
+
+    <div id="setup" class="setup">
+      <h1>Think of <em>something.</em></h1>
+      <p>Keep it to yourself. Telepa asks the questions and tries to guess.</p>
+      <div class="choices" id="categories" hidden>
+        <button data-category="object">An object <span>↗</span></button>
+        <button data-category="person">A person <span>↗</span></button>
+      </div>
+      <button id="sample" class="sample" type="button">Try a sample round <span>↗</span></button>
+      <p class="note" id="notice">Telepa guesses from your clues. Choose a public figure or fictional character for a person. Keep personal details private.</p>
+    </div>
+
+    <div id="game" class="game" hidden>
+      <div class="game-heading">
+        <div><span id="category"></span><h1 id="round-title" tabindex="-1">Your round</h1></div>
+        <div class="clock"><time id="timer">2:00</time><small id="timer-label">Time goal</small></div>
+      </div>
+      <div class="board">
+        <section class="conversation" aria-label="Conversation">
+          <ol id="messages" aria-live="polite"></ol>
+          <div id="result" role="status"></div>
+          <div id="answer-controls" hidden>
+            <div id="quick" class="quick"></div>
+            <form id="answer-form">
+              <label class="sr-only" for="answer">Type a clue</label>
+              <input id="answer" maxlength="180" placeholder="Type a short clue…" autocomplete="off">
+              <button type="submit">Send</button>
+            </form>
+          </div>
+        </section>
+        <aside>
+          <p id="count"></p>
+          <h2>Ruled out</h2>
+          <ul id="clues" aria-live="polite"></ul>
+          <p id="empty-clues" class="note">Exclusions from your clues show up here.</p>
+          <button id="correct" class="quiet" hidden>Correct last answer</button>
+        </aside>
+      </div>
+      <button id="end" class="quiet">End round</button>
+    </div>
+    <div id="feedback" role="status"></div>
+    <button id="retry" hidden>Try again</button>
+  </main>
+</body>
+</html>
