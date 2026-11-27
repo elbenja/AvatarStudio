@@ -12,6 +12,11 @@ const loaders: Record<CharacterId, () => Promise<AvatarModule>> = {
   pig: () => import('virtual:avatar/pig'),
 };
 
+/** The pages' own body turn toward the pointer at either edge, in radians. */
+const LEAN = 0.28;
+/** How long a tap keeps the character smiling and waving. */
+const CHEER_MS = 2000;
+
 export function loadAvatar(id: CharacterId): Promise<AvatarModule> {
   return loaders[id]();
 }
@@ -42,6 +47,18 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
     api: null,
     on(type, fn, o) {
       if (type === 'resize') { resizers.push(fn as () => void); return; }
+      // The pages read the pointer as clientX / width, written for a full-window canvas. Here the canvas is one
+      // box on the page, so hand them coordinates inside that box, clamped to its edges: the character turns
+      // toward the pointer wherever it is, and never past its full turn.
+      if (type === 'pointermove') {
+        const inner = fn;
+        fn = ((e: PointerEvent) => {
+          const r = el.getBoundingClientRect();
+          const clientX = Math.min(Math.max(e.clientX - r.left, 0), r.width);
+          const clientY = Math.min(Math.max(e.clientY - r.top, 0), r.height);
+          inner({ pointerType: e.pointerType, clientX, clientY } as unknown as Event);
+        }) as EventListener;
+      }
       window.addEventListener(type, fn, o);
       listeners.push([window, type, fn, o]);
     },
@@ -67,6 +84,13 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
       const pad = opts.pad ?? 1.06;
       return { V: Math.max(mod.meta.tall * pad, (mod.meta.wide * host.h) / host.w), panel: 0 };
     },
+    lean(x) {
+      if (!opts.wideLean || !host.api) return x * LEAN;
+      // With the camera off to one side, the pages' small turn only reaches one side of the screen.
+      // Reach past the camera's angle on the far side, so left and right mirror each other on screen.
+      const az = Math.min(Math.max(host.api.controls.getAzimuthalAngle(), -Math.PI / 2), Math.PI / 2);
+      return x * (LEAN + Math.max(0, x < 0 ? -2 * az : 2 * az));
+    },
     loop(r, fn) {
       renderer = r;
       frame = fn;
@@ -86,6 +110,21 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
   });
   moodObserver.observe(ui, { subtree: true, attributeFilter: ['aria-pressed'] });
 
+  // A tap on the character: the page hops it and clears its emotion. Right after, it smiles and waves
+  // (the first emotion, Happy) for a moment, then goes back to neutral.
+  let cheerTimer = 0;
+  let tapFrom: { x: number; y: number } | null = null;
+  const stage = api.renderer.domElement;
+  stage.addEventListener('pointerdown', (e) => { tapFrom = { x: e.clientX, y: e.clientY }; });
+  stage.addEventListener('pointerup', (e) => {
+    if (tapFrom && Math.hypot(e.clientX - tapFrom.x, e.clientY - tapFrom.y) < 6) {
+      api.setEmotion(emotionKeys[0] ?? null);
+      clearTimeout(cheerTimer);
+      cheerTimer = window.setTimeout(() => api.setEmotion(null), CHEER_MS);
+    }
+    tapFrom = null;
+  });
+
   const resize = new ResizeObserver(() => { if (!destroyed) resizers.forEach((fn) => fn()); });
   resize.observe(el);
 
@@ -102,6 +141,7 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
   return {
     id,
     setEmotion(next) {
+      clearTimeout(cheerTimer);
       mood = next;
       api.setEmotion(next < 0 ? null : emotionKeys[next] ?? null);
     },
@@ -128,6 +168,7 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
     },
     destroy() {
       destroyed = true;
+      clearTimeout(cheerTimer);
       moodObserver.disconnect();
       resize.disconnect();
       api.controls.dispose();

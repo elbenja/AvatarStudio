@@ -36,6 +36,8 @@ export interface AvatarHost {
   attach(canvas: HTMLCanvasElement): void;
   byId(id: string): HTMLElement | null;
   framing(): { V: number; panel: number };
+  /** How far the body turns (radians) for a pointer at x, from -1 (left edge) to 1 (right edge). */
+  lean(x: number): number;
   loop(renderer: THREE.WebGLRenderer, frame: XRFrameRequestCallback): void;
 }
 
@@ -55,6 +57,8 @@ export interface MountOptions {
   background?: string;
   /** Head room around the character: 1 fits it exactly, larger values leave more air. */
   pad?: number;
+  /** Turn far enough, measured from the camera, that the character faces whichever side of the screen the pointer is on. */
+  wideLean?: boolean;
   /** The first frames are on screen. */
   onReady?: () => void;
   /** The camera was turned, in whole degrees. */
