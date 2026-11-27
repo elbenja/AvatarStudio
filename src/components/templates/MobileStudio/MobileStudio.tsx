@@ -67,8 +67,8 @@ export function MobileStudio({ state, character, actions, downloads, live }: Stu
 
       <div className="sd-phone-sheet">
         <BottomSheet id={SHEET_ID} open={open !== null} label={TABS.find((t) => t.id === shown)!.label} contentKey={`${shown}-${opens}`} onClose={withTick(() => setOpen(null))}>
-          {shown === 'character' && <CharacterPicker cols={4} who={state.who} onPick={withTick(actions.setWho)} />}
-          {shown === 'emotion' && <EmotionPicker cols={4} mood={state.mood} onPick={withTick(actions.setMood)} />}
+          {shown === 'character' && <CharacterPicker cols={4} collapsible={false} who={state.who} onPick={withTick(actions.setWho)} />}
+          {shown === 'emotion' && <EmotionPicker cols={8} collapsible={false} mood={state.mood} onPick={withTick(actions.setMood)} />}
           {shown === 'motion' && (
             <>
               <MotionSwitch row moving={state.moving} moveLabel={character.moveLabel} onChange={withTick(actions.setMoving)} />
