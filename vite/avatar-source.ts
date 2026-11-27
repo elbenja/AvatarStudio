@@ -48,6 +48,7 @@ const RULES: Rule[] = [
     find: /motion\[key\] \* CALM - smooth\[key\]/g,
     replace: 'motion[key] * CALM * host.bounce - smooth[key]',
   },
+  { what: 'body turn toward the pointer', find: /pointerX \* 0\.28 - rig\.rotation\.y/g, replace: 'host.lean(pointerX) - rig.rotation.y' },
   { what: 'viewport width', find: /\binnerWidth\b/g, replace: 'host.w' },
   { what: 'viewport height', find: /\binnerHeight\b/g, replace: 'host.h' },
   { what: 'canvas placement', find: /document\.body\.prepend\(renderer\.domElement\)/g, replace: 'host.attach(renderer.domElement)' },

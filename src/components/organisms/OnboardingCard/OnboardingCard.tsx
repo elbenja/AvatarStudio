@@ -50,7 +50,7 @@ export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps
 
       <div className="sd-card-hero">
         <div className="sd-card-stage">
-          <Stage who={who} mood={-1} moving turn={-35} pad={0.98} background={STAGE_BG} sweep={false} />
+          <Stage who={who} mood={-1} moving turn={-35} pad={0.98} background={STAGE_BG} sweep={false} wideLean />
         </div>
         <div className="sd-card-hem" aria-hidden="true" />
         <div className="sd-card-tags" aria-hidden="true">
@@ -62,11 +62,11 @@ export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps
 
       <div className="sd-card-body">
         <h2 id="sd-card-title" className="sd-card-title">Avatar Studio</h2>
-        <p className="sd-card-text">It’s a fun lab project made a productize service.</p>
+        <p className="sd-card-text">A Silverdesk lab experiment that got out of hand, and now it kills slop for a living. Your company could have one too: a custom avatar that dances, pouts, and chats back.</p>
       </div>
 
       <div className="sd-card-foot">
-        <Button kind="float" label="Continue" glyphEnd="arrow" onClick={onContinue} autoFocus />
+        <Button kind="float" label="Close" onClick={onContinue} autoFocus />
       </div>
     </section>
   );

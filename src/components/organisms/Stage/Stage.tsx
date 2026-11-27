@@ -21,6 +21,8 @@ export interface StageProps {
   sweep?: boolean;
   /** Head room around the character (1 = tight). */
   pad?: number;
+  /** The character turns to face whichever side of the screen the pointer is on, not just lean toward it. */
+  wideLean?: boolean;
   onTurn?: (degrees: number) => void;
   /** The character changed emotion by itself (a tap on it returns it to neutral). */
   onMood?: (mood: Mood) => void;
@@ -29,26 +31,15 @@ export interface StageProps {
 interface Applied { mood: Mood; moving: boolean; speed: number; bounce: number; turn: number }
 type PerCharacter<T> = Partial<Record<CharacterId, T>>;
 
-/** Sculpting blocks the main thread for a moment: give the poster a frame to paint first. */
+/** Sculpting blocks the main thread for a moment: give the loader a frame to paint first. */
 const BOOT_DELAY_MS = 120;
-/** On a slow connection, stop waiting for the poster and start sculpting anyway. */
-const POSTER_WAIT_MS = 1500;
 const BACKGROUND = '#f6f6f6';
-
-/** Resolves once the poster is decoded and has been on screen for a frame, or after a timeout. */
-function posterPainted(img: HTMLImageElement | null): Promise<void> {
-  const decoded = img ? img.decode().catch(() => undefined) : Promise.resolve();
-  const timeout = new Promise<void>((r) => setTimeout(r, POSTER_WAIT_MS));
-  return Promise.race([decoded, timeout]).then(
-    () => new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r()))),
-  );
-}
 
 /**
  * The live character. Each character gets its own slot and WebGL canvas, booted the first time it is picked
  * and kept afterwards, so coming back to one is instant. Only the character on stage renders, and only while
- * the stage is on screen and the tab is visible. Until its first frames are drawn, a light WebP poster holds
- * its place; if WebGL is missing or the sculpt fails, the poster simply stays.
+ * the stage is on screen and the tab is visible. Until its first frames are drawn, a small dot loader holds
+ * its place; if WebGL is missing or the sculpt fails, a still poster stands in for the character.
  */
 export function Stage(props: StageProps) {
   const { who, pad = 1.12, live = true, background = BACKGROUND, sweep: sweepOn = true } = props;
@@ -56,7 +47,6 @@ export function Stage(props: StageProps) {
   latest.current = props;
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const posterRef = useRef<HTMLImageElement>(null);
   const slots = useRef<PerCharacter<HTMLDivElement | null>>({});
   const handles = useRef<PerCharacter<AvatarHandle>>({});
   const applied = useRef<PerCharacter<Applied>>({});
@@ -126,12 +116,13 @@ export function Stage(props: StageProps) {
     const timer = window.setTimeout(async () => {
       booting.current[who] = true;
       try {
-        const [mod] = await Promise.all([loadAvatar(who), posterPainted(posterRef.current)]);
+        const mod = await loadAvatar(who);
         const slot = slots.current[who];
         if (cancelled || gone.current || !slot) { booting.current[who] = false; return; }
         handles.current[who] = mountAvatar(slot, who, mod, {
           background,
           pad,
+          wideLean: latest.current.wideLean,
           onReady: () => { if (!gone.current) setReady((r) => ({ ...r, [who]: true })); },
           onTurn: (deg) => { if (latest.current.who === who) latest.current.onTurn?.(deg); },
           onEmotion: (mood) => {
@@ -165,14 +156,16 @@ export function Stage(props: StageProps) {
     <div ref={rootRef} className="sd-stage" role="img" aria-label={`${character.title}, live 3D character. Drag to turn, tap to hop.`}>
       {sweep > 0 && <div key={sweep} className="sd-glimm" aria-hidden="true" />}
 
-      {/* Sized by the same rule as the camera (see Stage.css), so the hand-off to 3D does not jump. */}
-      <div
-        className={'sd-poster' + (isReady ? ' is-gone' : '')}
-        aria-hidden="true"
-        style={{ '--pad': pad, '--fit': FRAMING[who].tall / FRAMING[who].wide } as CSSProperties}
-      >
-        <img key={who} ref={posterRef} src={character.poster} alt="" width={800} height={800} decoding="async" fetchPriority="high" />
-      </div>
+      {/* Only when the 3D cannot start. Sized by the same rule as the camera (see Stage.css). */}
+      {failed[who] && (
+        <div
+          className="sd-poster"
+          aria-hidden="true"
+          style={{ '--pad': pad, '--fit': FRAMING[who].tall / FRAMING[who].wide } as CSSProperties}
+        >
+          <img key={who} src={character.poster} alt="" width={800} height={800} decoding="async" />
+        </div>
+      )}
 
       {CHARACTERS.map(({ id }) => (
         <div
