@@ -15,7 +15,6 @@ export interface StudioController {
     nextMood: () => void;
     setMoving: (moving: boolean) => void;
     setSpeed: (v: number) => void;
-    setBounce: (v: number) => void;
     setTurn: (v: number) => void;
     resetView: () => void;
     togglePause: () => void;
@@ -38,7 +37,6 @@ export function useStudioController(onDownloaded?: () => void): StudioController
     nextMood: () => dispatch({ type: 'nextMood' }),
     setMoving: (moving) => dispatch({ type: 'moving', moving }),
     setSpeed: (speed) => dispatch({ type: 'speed', speed }),
-    setBounce: (bounce) => dispatch({ type: 'bounce', bounce }),
     setTurn: (turn) => dispatch({ type: 'turn', turn }),
     resetView: () => dispatch({ type: 'turn', turn: 0 }),
     togglePause: () => dispatch({ type: 'togglePause' }),

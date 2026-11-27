@@ -3,6 +3,7 @@ import type { StudioTemplateProps } from '../../../state/controller';
 import { Logo } from '../../molecules/Logo/Logo';
 import { DownloadBar } from '../../molecules/DownloadBar/DownloadBar';
 import { Rail } from '../../molecules/Rail/Rail';
+import { StartVoice } from '../../molecules/StartVoice/StartVoice';
 import { AboutOverlay } from '../../organisms/AboutOverlay/AboutOverlay';
 import { MotionPanel } from '../../organisms/MotionPanel/MotionPanel';
 import { Sidebar } from '../../organisms/Sidebar/Sidebar';
@@ -11,7 +12,7 @@ import './DesktopStudio.css';
 
 const PANEL_ID = 'sd-motion-panel';
 
-/** Full-bleed stage with floating chrome: logo and downloads on top, tools on the left, controls on the right. */
+/** Full-bleed stage with floating chrome: logo and downloads on top, tools on the left, controls on the right, voice below. */
 export function DesktopStudio({ state, actions, downloads, live }: StudioTemplateProps) {
   const [motionOpen, setMotionOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -33,6 +34,12 @@ export function DesktopStudio({ state, actions, downloads, live }: StudioTemplat
         </div>
       </div>
 
+      <div className="sd-desk-voice">
+        <div className="sd-in sd-in-2">
+          <StartVoice />
+        </div>
+      </div>
+
       <div className="sd-desk-rail">
         <div className="sd-in sd-in-2">
           <Rail
@@ -51,10 +58,8 @@ export function DesktopStudio({ state, actions, downloads, live }: StudioTemplat
         <MotionPanel
           id={PANEL_ID}
           speed={state.speed}
-          bounce={state.bounce}
           turn={state.turn}
           onSpeed={actions.setSpeed}
-          onBounce={actions.setBounce}
           onTurn={actions.setTurn}
           onClose={toggleMotion}
         />

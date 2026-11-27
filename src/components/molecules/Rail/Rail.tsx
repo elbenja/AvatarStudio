@@ -25,7 +25,7 @@ export function Rail(props: RailProps) {
           <IconButton tipSide="right" glyph="smile" label="Next emotion" onClick={props.onNextEmotion} />
           <IconButton tipSide="right" glyph="turn" label="Reset view" onClick={props.onResetView} />
           <IconButton tipSide="right" glyph={props.paused ? 'play' : 'pause'} label={props.paused ? 'Play' : 'Pause'} toggle on={props.paused} onClick={props.onTogglePause} />
-          <IconButton tipSide="right" glyph="curve" label="Motion" toggle on={props.motionOpen} aria-controls="sd-motion-panel" aria-expanded={props.motionOpen} onClick={props.onToggleMotion} />
+          <IconButton tipSide="right" glyph="curve" className="sd-rail-motion" label="Motion" toggle on={props.motionOpen} aria-controls="sd-motion-panel" aria-expanded={props.motionOpen} onClick={props.onToggleMotion} />
           <div className="sd-rail-rule" role="separator" />
         </>
       )}

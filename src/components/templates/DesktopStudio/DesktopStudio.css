@@ -9,15 +9,20 @@
 
 /* Full-width strips that centre their child but let clicks through to the stage. */
 .sd-desk-bar { position: absolute; left: 0; right: 0; top: 12px; z-index: 5; display: flex; justify-content: center; pointer-events: none; }
+.sd-desk-voice { position: absolute; left: 0; right: 0; bottom: 20px; z-index: 5; display: flex; justify-content: center; pointer-events: none; }
 .sd-desk-rail { position: absolute; left: 16px; top: 0; bottom: 0; z-index: 6; display: flex; align-items: center; pointer-events: none; }
-.sd-desk-bar > *, .sd-desk-rail > * { pointer-events: auto; }
+.sd-desk-bar > *, .sd-desk-voice > *, .sd-desk-rail > * { pointer-events: auto; }
 
 .sd-desk-side { position: absolute; right: 12px; top: 12px; bottom: 12px; z-index: 6; display: flex; }
 
-/* The panel grows out of the rail: anchored left, it scales from the rail's edge. */
+/* The panel opens beside the rail's Motion button, its title level with the button, and grows out of it. */
 .sd-desk-panel {
-  position: absolute; left: 92px; bottom: max(12px, calc(50% - 330px)); z-index: 7;
-  transform-origin: left center;
+  position: absolute; z-index: 7;
+  /* Without anchor positioning: the same spot, worked out from the rail being centred. */
+  top: calc(50% + 14px); left: 92px;
+  position-anchor: --sd-motion-trigger;
+  top: calc(anchor(top) - 6px); left: calc(anchor(right) + 24px);
+  transform-origin: left 30px;
   transition: opacity var(--sd-med) var(--sd-out), transform var(--sd-slow) var(--sd-spring), visibility 0s linear 0s;
 }
 .sd-desk-panel.is-closed {

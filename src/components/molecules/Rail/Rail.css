@@ -2,4 +2,6 @@
   display: inline-flex; flex-direction: column; gap: 6px; padding: 8px;
   border-radius: var(--sd-r-bar); background: var(--sd-surface); box-shadow: var(--sd-shadow-float);
 }
+/* The Motion panel opens beside this button: see .sd-desk-panel. */
+.sd-rail-motion { anchor-name: --sd-motion-trigger; }
 .sd-rail-rule { height: 1px; margin: 4px 6px; background: var(--sd-line); }

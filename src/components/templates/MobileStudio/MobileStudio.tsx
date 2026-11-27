@@ -9,6 +9,7 @@ import { DownloadBar } from '../../molecules/DownloadBar/DownloadBar';
 import { EmotionPicker } from '../../molecules/EmotionPicker/EmotionPicker';
 import { MotionSwitch } from '../../molecules/MotionSwitch/MotionSwitch';
 import { Rail } from '../../molecules/Rail/Rail';
+import { StartVoice } from '../../molecules/StartVoice/StartVoice';
 import { AboutOverlay } from '../../organisms/AboutOverlay/AboutOverlay';
 import { BottomSheet } from '../../organisms/BottomSheet/BottomSheet';
 import { MotionPanel } from '../../organisms/MotionPanel/MotionPanel';
@@ -60,9 +61,12 @@ export function MobileStudio({ state, character, actions, downloads, live }: Stu
         <Stage {...state} live={live} pad={1.1} onTurn={actions.setTurn} onMood={actions.setMood} />
       </div>
 
-      {/* About floats over the stage, bottom-left above the tabs; it steps aside while a sheet is open. */}
-      <div className={'sd-phone-rail' + (open ? ' is-hidden' : '')} inert={open !== null}>
+      {/* About (bottom-left) and Voice (centre) float over the stage above the tabs; they step aside while a sheet is open. */}
+      <div className={'sd-phone-float sd-phone-rail' + (open ? ' is-hidden' : '')} inert={open !== null}>
         <Rail compact onAbout={() => { tick(); setOpen(null); setAboutOpen(true); }} />
+      </div>
+      <div className={'sd-phone-float sd-phone-voice' + (open ? ' is-hidden' : '')} inert={open !== null}>
+        <StartVoice />
       </div>
 
       <div className="sd-phone-sheet">
@@ -73,7 +77,7 @@ export function MobileStudio({ state, character, actions, downloads, live }: Stu
             <>
               <MotionSwitch row collapsible={false} moving={state.moving} moveLabel={character.moveLabel} onChange={withTick(actions.setMoving)} />
               <div className="sd-phone-sliders">
-                <MotionPanel speed={state.speed} bounce={state.bounce} turn={state.turn} onSpeed={actions.setSpeed} onBounce={actions.setBounce} onTurn={actions.setTurn} />
+                <MotionPanel speed={state.speed} turn={state.turn} onSpeed={actions.setSpeed} onTurn={actions.setTurn} />
               </div>
             </>
           )}
