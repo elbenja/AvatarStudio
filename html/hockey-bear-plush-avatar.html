@@ -73,7 +73,7 @@
     display: inline-flex; padding: 4px; gap: 4px; background: var(--pill); border: 1px solid var(--line); border-radius: 999px;
     box-shadow: 0 1px 2px rgba(22, 36, 79, .06);
   }
-  .mode button { min-height: 40px; min-width: 92px; padding: 0 18px; border: 0; border-radius: 999px; background: transparent; }
+  .mode button { min-height: 40px; min-width: 76px; padding: 0 16px; border: 0; border-radius: 999px; background: transparent; }
   .mode button[aria-pressed="true"] { background: var(--red); color: #fff; font-weight: 600; }
   .hint { font: 500 13px/1.3 var(--type); color: var(--muted); }
 
@@ -113,6 +113,7 @@
     <div class="mode" role="group" aria-label="Movement">
       <button id="stand" aria-pressed="true">Stand</button>
       <button id="skate" aria-pressed="false">Skate</button>
+      <button id="talk" aria-pressed="false">Talk</button>
     </div>
     <div class="hint">Drag to turn · tap him to hop</div>
   </div>
@@ -733,10 +734,13 @@ function updateMouth(p) {
   tongue.scale.set(p.mW * 0.55 * open, p.mO * 0.36 * open, 1);
 }
 
-// eyes: glossy beads that live behind the lenses and show when the glasses slip
+// eyes: glossy beads with a small glint. They live behind the lenses and show when the glasses slip or come off
 const eyes = [1, -1].map(sx => {
   const m = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), glossBlack);
   m.position.set(sx * 0.32, 2.43, faceZ(sx * 0.32, 2.43) + 0.03);
+  const glint = new THREE.Mesh(new THREE.SphereGeometry(0.17, 10, 8), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+  glint.position.set(0.28, 0.4, 0.86);
+  m.add(glint);
   head.bind.add(m);
   return { sx, m };
 });
@@ -1000,6 +1004,7 @@ const POSES = {
   embarrassed: { mW: 0.0675, mC: 0.0338, mS: 0.0162, blush: 1, ear: 0.3, turn: 0.15, squash: 0.03, headTurn: 0.3, headPitch: 0.14, headTilt: 0.08, hx: -0.95, hy: 2.05, hz: 0.45 },
   angry:       { mW: 0.1215, mC: -0.0945, mT: 0.0162, mO: 0.0189, specs: 0.6, eye: 0.62, eyeTilt: 0.5, blush: 0.9, red: 1, earBack: 0.7, pitch: 0.12, crouch: 0.03, headPitch: 0.02, hx: -1.0, hy: 1.3, hz: 0.42, both: 1, pace: 1.3 },
 };
+const TALK = { mW: 0.115, mC: 0.055, blush: 0.25, ear: -0.08, headPitch: -0.03 };   // chatting: a small open smile, ears up
 const IMPATIENT = { specs: 0.55, eye: 0.7, eyeTilt: 0.28, mC: -0.081, headTilt: 0.1, headTurn: -0.08 };
 
 // t = clock time, e = seconds since this emotion started
@@ -1053,17 +1058,27 @@ for (const b of buttons) {
   b.addEventListener('blur', () => { if (current === name && !fromPointer()) setEmotion(null); });
 }
 
-// stand / skate
-const standBtn = document.getElementById('stand'), skateBtn = document.getElementById('skate');
+// stand / skate / talk
+const stageBtns = { stand: document.getElementById('stand'), skate: document.getElementById('skate'), talk: document.getElementById('talk') };
 const skate = { on: false, w: 0, phase: 0, speed: 0 }; // w eases 0..1 as he gets going; phase runs 0..1 over two pushes
-function setSkating(on) {
-  if (on && skate.w < 0.05) skate.phase = 0.97; // he starts with a push of the left skate
-  skate.on = on;
-  standBtn.setAttribute('aria-pressed', String(!on)); skateBtn.setAttribute('aria-pressed', String(on));
+// Talking to the camera: a close-up, sunglasses off. `level` is how loud his voice is right now and `live` whether he is
+// speaking or listening. Left alone he chatters by himself; a voice drives him through avatar.voice(level), 0..1.
+const talk = { on: false, w: 0, level: 0, live: 0, ext: null };
+function setStage(name) {
+  if (name === 'skate' && skate.w < 0.05) skate.phase = 0.97; // he starts with a push of the left skate
+  skate.on = name === 'skate'; talk.on = name === 'talk';
+  for (const k in stageBtns) stageBtns[k].setAttribute('aria-pressed', String(k === name));
   lastAttention = clock.elapsedTime;
 }
-standBtn.addEventListener('click', () => setSkating(false));
-skateBtn.addEventListener('click', () => setSkating(true));
+function setSkating(on) { setStage(on ? 'skate' : 'stand'); }
+for (const k in stageBtns) stageBtns[k].addEventListener('click', () => setStage(k));
+// For the page that hosts him: avatar.setStage('talk'), then avatar.voice(level) on every frame of audio (null hands
+// the talking back to him), and avatar.setEmotion('happy' | ... | null) for how he feels meanwhile.
+window.avatar = {
+  setStage,
+  setEmotion: name => { clearTimeout(holdTimer); setEmotion(name in POSES ? name : null); },
+  voice: level => { talk.ext = level == null ? null : clamp(+level || 0, 0, 1); },
+};
 
 const POGO = { t: -1, hop: 0.46, hops: 2, height: 0.36 };
 let down = null;
@@ -1138,6 +1153,7 @@ function stride(p) {
   return F;
 }
 const CADENCE = 1 / 2.4, SPEED = 0.62; // strides per second, units per second
+const TALK_Y = 2.52, TALK_ZOOM = 1.55, TALK_WIDE = 2.6;  // the close-up: where the camera looks, how far it closes in, the width it keeps in view
 
 function tick() {
   const rawDt = clock.getDelta(), dt = Math.min(rawDt, 0.1), t = clock.elapsedTime;
@@ -1145,7 +1161,7 @@ function tick() {
   shared.uTime.value = t;
 
   // losing patience: ramps in after being ignored while standing, with short pauses between tantrums
-  const ignored = !current && !skate.on && t - lastAttention > PATIENCE;
+  const ignored = !current && !skate.on && !talk.on && t - lastAttention > PATIENCE;
   impatience += ((ignored ? 1 : 0) - impatience) * Math.min(dt * 3, 1);
   uiEl.classList.toggle('waiting', ignored);
 
@@ -1155,6 +1171,7 @@ function tick() {
   for (const key of Object.keys(cur)) {
     let target = NEUTRAL[key];
     if (pose) { if (key in pose) target = pose[key]; }
+    else if (talk.on) { if (key in TALK) target = TALK[key]; }
     else if (key in IMPATIENT) target = lerp(target, IMPATIENT[key], impatience);
     cur[key] += (target - cur[key]) * k;
   }
@@ -1167,6 +1184,38 @@ function tick() {
     motion.footR = Math.max(0, -Math.sin(t * 9.5)) * 0.3 * impatience * gate;
     motion.lean = 0.02 * Math.sin(t * 1.75) * impatience;
   }
+
+  // talking: how far into the close-up he is, how loud his voice is, and whether he is speaking or listening
+  talk.w += ((talk.on ? 1 : 0) - talk.w) * (1 - Math.exp(-dt * 4));
+  const tw = ease(clamp(talk.w, 0, 1));
+  let voice = 0, laugh = 0;
+  if (talk.on) {
+    if (talk.ext !== null) voice = talk.ext;
+    else { // his own chatter: phrases with pauses between them, syllables inside, and a chuckle now and then
+      const c = (t % 11) / 11;
+      laugh = smoothstep(c, 0.8, 0.83) * (1 - smoothstep(c, 0.93, 0.97));
+      const phrase = smoothstep(Math.sin(t * 0.9 + 2 * Math.sin(t * 0.37)), -0.55, -0.25);
+      const syllable = 0.5 + 0.5 * Math.sin(t * 14 + 3 * Math.sin(t * 2.3));
+      voice = Math.max(phrase * (0.25 + 0.75 * syllable) * (0.75 + 0.25 * Math.sin(t * 5.1 + 1)) * (1 - laugh), laugh * (0.55 + 0.45 * Math.sin(t * 16)));
+    }
+  }
+  talk.level += (voice - talk.level) * (1 - Math.exp(-dt * (voice > talk.level ? 30 : 14)));
+  talk.live += ((voice > 0.06 ? 1 : 0) - talk.live) * (1 - Math.exp(-dt * (voice > 0.06 ? 8 : 2.5)));
+  const lv = talk.level * tw, spk = talk.live * tw, gest = spk * (current ? 0.3 : 1);
+  if (tw > 0.001) {
+    // he talks with his whole body: the head nods on the loud syllables and tips from side to side, one hand comes up
+    // and beats along, now and then both. Listening, the hands sink and the head tilts.
+    motion.headPitch += spk * (0.035 * Math.sin(t * 4.3) + 0.025 * Math.sin(t * 1.7)) + 0.05 * lv - 0.1 * laugh;
+    motion.headTilt += spk * 0.07 * Math.sin(t * 1.25 + 0.4) + (tw - spk) * 0.07;
+    motion.headTurn += spk * 0.06 * Math.sin(t * 0.83);
+    motion.lean += spk * 0.025 * Math.sin(t * 1.25);
+    motion.crouch += 0.012 * lv;
+    motion.squash += 0.035 * laugh * (0.5 + 0.5 * Math.sin(t * 16));
+    motion.hx += gest * (0.12 + 0.09 * Math.sin(t * 2.3));
+    motion.hy += gest * (0.6 + 0.09 * Math.sin(t * 3.1 + 1) + 0.1 * lv);
+    motion.hz += gest * (0.5 + 0.07 * Math.sin(t * 2.3 + 0.5));
+  }
+  const bothHands = clamp(cur.both + gest * smoothstep(Math.sin(t * 0.5 + 1), 0.1, 0.6), 0, 1);
   const km = 1 - Math.exp(-dt * 22);
   for (const key of Object.keys(motion)) smooth[key] += (motion[key] * CALM - smooth[key]) * km;
 
@@ -1199,7 +1248,9 @@ function tick() {
 
   // the whole bear: hops, and turns a little toward the pointer
   rig.position.y = y;
-  rig.rotation.y += (pointerX * 0.28 - rig.rotation.y) * Math.min(dt * 3, 1);
+  const leanTo = pointerX * 0.28 - rig.rotation.y;
+  const faceTo = lerp(leanTo, controls.getAzimuthalAngle() + pointerX * 0.1 - rig.rotation.y, tw); // talking, he faces the camera
+  rig.rotation.y += Math.atan2(Math.sin(faceTo), Math.cos(faceTo)) * Math.min(dt * 3, 1);
   look.x += (pointerX - look.x) * Math.min(dt * 4, 1); look.y += (pointerY - look.y) * Math.min(dt * 4, 1);
 
   // hips: standing, his weight drifts from skate to skate; skating, it swings over the gliding one
@@ -1237,7 +1288,7 @@ function tick() {
   const rx = cur.hx + smooth.hx - 0.1 * air - 0.04 * w * Math.abs(s1), ry = cur.hy + smooth.hy + 0.3 * air + 0.01 * breathe, rz = cur.hz + smooth.hz;
   _t.set(rx, ry, rz - 0.2 * w * s1 - 0.25 * swing.x);
   reach(arms[1], _t, _p.set(-0.5, -0.2, -1));
-  _t.set(lerp(-NEUTRAL.hx + 0.04 * w * Math.abs(s1), -rx, cur.both), lerp(NEUTRAL.hy + 0.3 * air + 0.01 * breathe, ry, cur.both), lerp(NEUTRAL.hz, rz, cur.both) + 0.2 * w * s1 + 0.25 * swing.x);
+  _t.set(lerp(-NEUTRAL.hx + 0.04 * w * Math.abs(s1), -rx, bothHands), lerp(NEUTRAL.hy + 0.3 * air + 0.01 * breathe, ry, bothHands), lerp(NEUTRAL.hz, rz, bothHands) + 0.2 * w * s1 + 0.25 * swing.x);
   reach(arms[0], _t, _p.set(0.5, -0.2, -1));
 
   shared.uBounce.value += (clamp(vy * 0.25, -0.8, 0.8) - shared.uBounce.value) * Math.min(dt * 12, 1);
@@ -1269,14 +1320,25 @@ function tick() {
 
   // face
   const blinkLen = current === 'sleepy' ? 0.55 : 0.15;
-  if (t > nextBlink) { blinkAt = t; nextBlink = t + 2.4 + Math.random() * 3; }
+  if (t > nextBlink) { blinkAt = t; nextBlink = t + (talk.on ? 1.5 : 2.4) + Math.random() * 3; }
   const bp = (t - blinkAt) / blinkLen;
   Object.assign(face, cur); face.mO += smooth.mO; face.mW += smooth.mO * 0.2;
+  if (tw > 0.001) { // the mouth opens with the voice; wide and round shapes take turns; a laugh is wide open with the eyes squeezed
+    const round = 0.5 + 0.5 * Math.sin(t * 3.7 + 2 * Math.sin(t * 1.3));
+    face.mO += lv * (0.085 + 0.025 * laugh);
+    face.mW *= 1 + lv * (0.12 - 0.3 * round) + 0.3 * laugh * tw;
+    face.mC += 0.035 * laugh * tw - 0.02 * lv * round;
+    face.eye *= 1 + 0.1 * lv - 0.6 * laugh * tw;
+  }
   updateMouth(face);
   updateEyes(face, bp < 1 ? Math.sin(Math.PI * bp) : 0);
   const sp = cur.specs, pop = smooth.pop;
   glasses.position.set(0, GLASSES.y - 0.2 * sp + 0.26 * pop, GLASSES.z + 0.06 * sp + 0.06 * pop);
   glasses.rotation.x = 0.3 * sp - 0.4 * pop;
+  // to talk, the glasses lift off and are gone
+  glasses.position.y += 0.3 * tw;
+  glasses.scale.setScalar(GLASSES_K * (1 - tw));
+  glasses.visible = tw < 0.98;
   const blush = headFur.userData.uniforms;
   blush.uBlush.value.w = clamp(cur.blush, 0, 1);
   blush.uBlushC.value.set(C.blush).lerp(_blushHot, clamp(cur.red, 0, 1));
@@ -1293,6 +1355,11 @@ function tick() {
     s.material.opacity = s.userData.opacity * clamp(1 - h / 0.3, 0, 1);
   });
 
+  // the camera closes in on his head and shoulders, as far as the screen's width allows (TALK_WIDE units must stay in view)
+  const dy = lerp(LOOK_Y, TALK_Y, tw) - controls.target.y;
+  controls.target.y += dy; camera.position.y += dy;
+  const zoom = lerp(1, clamp(2 * CAM_D * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2) * camera.aspect / TALK_WIDE, 1, TALK_ZOOM), tw);
+  if (zoom !== camera.zoom) { camera.zoom = zoom; camera.updateProjectionMatrix(); }
   controls.update();
   renderer.render(scene, camera);
   if (++frames === 3) document.getElementById('poster')?.classList.add('gone');
