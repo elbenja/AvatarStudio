@@ -20,7 +20,7 @@ const glyphFor = (s: SaveState, idle?: Glyph): Glyph | undefined => (done(s) ? '
 export function DownloadBar({ png, html, onPng, onHtml, flat }: DownloadBarProps) {
   return (
     <div className={flat ? 'sd-dl sd-dl--flat' : 'sd-dl'} role="group" aria-label="Download this character">
-      <Button kind="quiet" glyph={glyphFor(png, 'image')} label={WORDS[png] ?? 'PNG'} wide={flat} aria-busy={png === 'busy'} onClick={onPng} />
+      <Button kind="quiet" glyph={glyphFor(png, 'image')} label={WORDS[png] ?? 'Download PNG'} wide={flat} aria-busy={png === 'busy'} onClick={onPng} />
       <Button kind="soft" glyph={glyphFor(html)} label={WORDS[html] ?? 'Download HTML'} wide={flat} aria-busy={html === 'busy'} onClick={onHtml} />
     </div>
   );
