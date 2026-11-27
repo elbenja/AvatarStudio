@@ -21,7 +21,7 @@ export function DesktopStudio({ state, actions, downloads, live }: StudioTemplat
   return (
     <main className="sd-desk">
       <div className="sd-desk-stage">
-        <Stage {...state} live={live} pad={1.2} onTurn={actions.setTurn} onMood={actions.setMood} />
+        <Stage {...state} live={live} warm pad={1.2} onTurn={actions.setTurn} onMood={actions.setMood} />
       </div>
 
       <div className="sd-desk-logo sd-in">

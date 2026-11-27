@@ -5,6 +5,7 @@ import { DesktopStudio } from '../components/templates/DesktopStudio/DesktopStud
 import { MobileStudio, tick } from '../components/templates/MobileStudio/MobileStudio';
 import { Onboarding } from '../components/templates/Onboarding/Onboarding';
 import { CARD_LEAVE_MS } from '../components/organisms/AboutOverlay/AboutOverlay';
+import { preloadAvatars, whenQuiet } from '../avatar/mount';
 
 /** Below this width the floating desktop chrome would crowd the stage, so the phone layout takes over. */
 export const DESKTOP_QUERY = '(min-width: 960px)';
@@ -25,6 +26,8 @@ export function Studio() {
   const [intro, setIntro] = useState<'open' | 'leaving' | null>(() => (seenIntro() ? null : 'open'));
   const leaveTimer = useRef(0);
   useEffect(() => () => clearTimeout(leaveTimer.current), []);
+  // Every character's module is fetched once the page settles, so a pick only has to sculpt.
+  useEffect(() => whenQuiet(preloadAvatars), []);
   // The card leaves first and releases its 3D; then the studio's own character starts.
   const dismiss = () => {
     if (intro !== 'open') return;

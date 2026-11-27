@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CHARACTERS } from '../../../avatar/characters';
 import type { CharacterId } from '../../../avatar/types';
 import { TURN } from '../../../state/studio';
@@ -13,27 +13,33 @@ export interface OnboardingCardProps {
   onContinue: () => void;
   /** Seconds each character stays on before the next one walks on. */
   interval?: number;
+  /** False pauses the stage and the parade, e.g. while the card is put away. */
+  live?: boolean;
 }
 
 /** Matches --sd-card-stage: the 3D canvas needs the colour itself, not the variable. */
 const STAGE_BG = '#eff2f6';
 
 /** "Avatar Studio" in a card: the characters parade through a live stage until someone picks one. */
-export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps) {
+export function OnboardingCard({ onContinue, interval = 3, live = true }: OnboardingCardProps) {
   const calm = usePrefersReducedMotion();
   const [who, setWho] = useState<CharacterId>(CHARACTERS[0].id);
   const [picked, setPicked] = useState(false);
   const [hovering, setHovering] = useState(false);
+  const close = useRef<HTMLButtonElement>(null);
+
+  // Focus lands on Close whenever the card comes up, including when it is brought back after being put away.
+  useEffect(() => { if (live) close.current?.focus(); }, [live]);
 
   // The parade stops once someone picks a character, while the pointer rests on the card, and under reduced motion.
   useEffect(() => {
-    if (picked || hovering || calm) return;
+    if (!live || picked || hovering || calm) return;
     const timer = window.setInterval(() => {
       if (document.hidden) return;
       setWho((w) => CHARACTERS[(CHARACTERS.findIndex((c) => c.id === w) + 1) % CHARACTERS.length].id);
     }, interval * 1000);
     return () => clearInterval(timer);
-  }, [picked, hovering, calm, interval]);
+  }, [live, picked, hovering, calm, interval]);
 
   return (
     <section
@@ -51,7 +57,7 @@ export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps
 
       <div className="sd-card-hero">
         <div className="sd-card-stage">
-          <Stage who={who} mood={-1} moving turn={TURN.home} pad={0.98} background={STAGE_BG} sweep={false} wideLean />
+          <Stage who={who} mood={-1} moving turn={TURN.home} live={live} warm pad={0.98} background={STAGE_BG} sweep={false} wideLean />
         </div>
         <div className="sd-card-hem" aria-hidden="true" />
         <div className="sd-card-tags" aria-hidden="true">
@@ -67,7 +73,7 @@ export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps
       </div>
 
       <div className="sd-card-foot">
-        <Button kind="float" label="Close" onClick={onContinue} autoFocus />
+        <Button ref={close} kind="float" label="Close" onClick={onContinue} />
       </div>
     </section>
   );
