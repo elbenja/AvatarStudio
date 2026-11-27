@@ -9,12 +9,14 @@ export interface MotionSwitchProps {
   onChange: (moving: boolean) => void;
   /** Side by side on a phone sheet; stacked in the sidebar. */
   row?: boolean;
+  /** The sidebar can fold it away; a phone sheet shows it whole. */
+  collapsible?: boolean;
 }
 
 /** Two toggles that act as one choice: standing still, or the character's move. */
-export function MotionSwitch({ moving, moveLabel, onChange, row }: MotionSwitchProps) {
+export function MotionSwitch({ moving, moveLabel, onChange, row, collapsible = true }: MotionSwitchProps) {
   return (
-    <Section title="Motion" collapsible>
+    <Section title="Motion" collapsible={collapsible}>
       <Well>
         <div className={row ? 'sd-moves sd-moves--row' : 'sd-moves'} role="group" aria-label="Movement">
           <Button kind={moving ? 'soft' : 'solid'} glyph="idle" label="Idle" wide pressed={!moving} onClick={() => onChange(false)} />

@@ -8,12 +8,15 @@ import './EmotionPicker.css';
 export interface EmotionPickerProps {
   mood: Mood;
   onPick: (mood: Mood) => void;
-  cols?: 3 | 4;
+  /** 8 puts every emotion in one row. */
+  cols?: 3 | 4 | 8;
+  /** The sidebar can fold it away; a phone sheet shows it whole. */
+  collapsible?: boolean;
 }
 
-export function EmotionPicker({ mood, onPick, cols = 3 }: EmotionPickerProps) {
+export function EmotionPicker({ mood, onPick, cols = 3, collapsible = true }: EmotionPickerProps) {
   return (
-    <Section title="Emotion" meta={mood >= 0 ? EMOTIONS[mood] : 'Neutral'} collapsible>
+    <Section title="Emotion" meta={mood >= 0 ? EMOTIONS[mood] : 'Neutral'} collapsible={collapsible}>
       <Well>
         <div className="sd-keys" style={{ '--cols': cols } as CSSProperties}>
           {EMOTIONS.map((label, i) => (
