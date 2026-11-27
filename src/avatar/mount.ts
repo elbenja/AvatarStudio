@@ -21,6 +21,41 @@ export function loadAvatar(id: CharacterId): Promise<AvatarModule> {
   return loaders[id]();
 }
 
+/** Downloads every character's module, without sculpting any. Call once the page has settled. */
+export function preloadAvatars(): Promise<unknown> {
+  return Promise.allSettled(Object.values(loaders).map((load) => load()));
+}
+
+/** How long the page must go without pointer, key or scroll input before background work starts. */
+const QUIET_MS = 1200;
+let lastInput = 0;
+let watching = false;
+const touch = () => { lastInput = performance.now(); };
+
+/**
+ * Runs `fn` once the person has left the page alone for a moment and the browser is idle, so a long task
+ * (sculpting) does not land in the middle of a drag or a click. Returns a cancel function.
+ */
+export function whenQuiet(fn: () => void): () => void {
+  if (!watching) {
+    watching = true;
+    for (const type of ['pointerdown', 'pointermove', 'keydown', 'wheel']) window.addEventListener(type, touch, { passive: true, capture: true });
+  }
+  let timer = 0;
+  let idle = 0;
+  const check = () => {
+    const wait = lastInput + QUIET_MS - performance.now();
+    if (wait > 0) { timer = window.setTimeout(check, wait); return; }
+    // Safari has no idle callbacks: there, quiet input alone has to do.
+    idle = typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 1000 }) : setTimeout(fn, 0);
+  };
+  timer = window.setTimeout(check, 0);
+  return () => {
+    clearTimeout(timer);
+    if (typeof cancelIdleCallback === 'function') cancelIdleCallback(idle); else clearTimeout(idle);
+  };
+}
+
 /** Boots a character into `el`, sized to it. Sculpting blocks the main thread for a moment. */
 export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule, opts: MountOptions = {}): AvatarHandle {
   // The page's own controls, kept detached: the module wires its listeners to them, and their

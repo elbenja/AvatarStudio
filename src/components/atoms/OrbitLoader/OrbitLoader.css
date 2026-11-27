@@ -1,0 +1,45 @@
+/* Layers, outside in: tilt (pointer) › kick (tap) › spin (always) › each dot on the ring.
+   Inside each dot the same rotations run in reverse, so the dot always faces the viewer
+   as a round disc while perspective makes the near side of the ring larger. */
+.sd-orbit {
+  --size: 112px; --dot: 11px; --rx: 50deg; --ry: -14deg;
+  position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size);
+  margin: calc(var(--size) / -2); perspective: 340px; pointer-events: none;
+  opacity: 0; transition: opacity var(--sd-med) var(--sd-out);
+}
+.sd-orbit.is-on { opacity: 1; }
+
+.sd-orbit-tilt, .sd-orbit-kick, .sd-orbit-spin { position: absolute; inset: 0; transform-style: preserve-3d; }
+.sd-orbit-unkick, .sd-orbit-unspin, .sd-orbit-face { display: block; width: 100%; height: 100%; transform-style: preserve-3d; }
+
+.sd-orbit-tilt { transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 700ms var(--sd-out); }
+.sd-orbit-face {
+  border-radius: 999px; background: var(--c);
+  transform: rotateY(calc(-1 * var(--ry))) rotateX(calc(-1 * var(--rx))); transition: transform 700ms var(--sd-out);
+}
+
+.sd-orbit-dot {
+  position: absolute; left: 50%; top: 50%; width: var(--dot); height: var(--dot); margin: calc(var(--dot) / -2);
+  transform-style: preserve-3d;
+  transform: rotate(var(--a)) translateY(calc(var(--dot) / 2 - var(--size) / 2)) rotate(calc(-1 * var(--a)));
+}
+
+.sd-orbit-spin, .sd-orbit-unspin { animation: sd-orbit-turn 5200ms linear infinite paused; }
+.sd-orbit-unspin { animation-direction: reverse; }
+.sd-orbit.is-on .sd-orbit-spin, .sd-orbit.is-on .sd-orbit-unspin { animation-play-state: running; }
+
+/* A tap: one extra turn that eases out. The ring and its counter-turn restart in the same frame. */
+.sd-orbit.is-kick-a .sd-orbit-kick { animation: sd-orbit-kick-a 1100ms var(--sd-out); }
+.sd-orbit.is-kick-a .sd-orbit-unkick { animation: sd-orbit-kick-a 1100ms var(--sd-out) reverse; }
+.sd-orbit.is-kick-b .sd-orbit-kick { animation: sd-orbit-kick-b 1100ms var(--sd-out); }
+.sd-orbit.is-kick-b .sd-orbit-unkick { animation: sd-orbit-kick-b 1100ms var(--sd-out) reverse; }
+
+@keyframes sd-orbit-turn { to { transform: rotate(360deg); } }
+@keyframes sd-orbit-kick-a { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
+@keyframes sd-orbit-kick-b { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
+
+/* Reduced motion: the flat ring, still. */
+@media (prefers-reduced-motion: reduce) {
+  .sd-orbit { --rx: 0deg; --ry: 0deg; }
+  .sd-orbit-spin, .sd-orbit-unspin { animation: none; }
+}

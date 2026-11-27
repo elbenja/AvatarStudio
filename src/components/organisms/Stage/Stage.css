@@ -26,15 +26,6 @@
   animation: sd-rise var(--sd-settle) var(--sd-out) both;
 }
 
-.sd-loader {
-  position: absolute; left: 50%; bottom: 9%; display: flex; gap: 6px;
-  transform: translateX(-50%); opacity: 0; transition: opacity var(--sd-med) var(--sd-out);
-}
-.sd-loader.is-on { opacity: 1; }
-.sd-loader i { width: 6px; height: 6px; border-radius: 999px; background: var(--sd-faint); animation: sd-dot 900ms ease-in-out infinite; }
-.sd-loader i:nth-child(2) { animation-delay: 120ms; }
-.sd-loader i:nth-child(3) { animation-delay: 240ms; }
-
 /* A colour glint sweeps across when the character changes. Remounted per change to replay. */
 .sd-glimm {
   position: absolute; top: -12%; bottom: -12%; left: 0; width: 46%; z-index: 2; pointer-events: none;
@@ -42,7 +33,6 @@
   animation: sd-sweep 1000ms var(--sd-out);
 }
 
-@keyframes sd-dot { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-5px); opacity: 1; } }
 @keyframes sd-sweep {
   0% { transform: translateX(-120%) skewX(-8deg); opacity: 0; }
   12% { opacity: 1; }
