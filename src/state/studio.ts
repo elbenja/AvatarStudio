@@ -29,8 +29,8 @@ export const BOUNCE = { min: 0, max: 2, step: 0.05 } as const;
 export const TURN = { min: -180, max: 180, step: 1, home: -35 } as const;
 
 export function initialStudio(calm: boolean): StudioState {
-  // With reduced motion the character starts standing and moves gently.
-  return { who: 'bear', mood: 0, moving: !calm, speed: 1, bounce: calm ? 0.4 : 1, turn: TURN.home, paused: false };
+  // The character starts neutral (a tap makes it smile). With reduced motion it starts standing and moves gently.
+  return { who: 'bear', mood: -1, moving: !calm, speed: 1, bounce: calm ? 0.4 : 1, turn: TURN.home, paused: false };
 }
 
 export function studioReducer(s: StudioState, a: StudioAction): StudioState {

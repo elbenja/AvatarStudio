@@ -14,6 +14,8 @@ const loaders: Record<CharacterId, () => Promise<AvatarModule>> = {
 
 /** The pages' own body turn toward the pointer at either edge, in radians. */
 const LEAN = 0.28;
+/** How long a tap keeps the character smiling and waving. */
+const CHEER_MS = 2000;
 
 export function loadAvatar(id: CharacterId): Promise<AvatarModule> {
   return loaders[id]();
@@ -108,6 +110,21 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
   });
   moodObserver.observe(ui, { subtree: true, attributeFilter: ['aria-pressed'] });
 
+  // A tap on the character: the page hops it and clears its emotion. Right after, it smiles and waves
+  // (the first emotion, Happy) for a moment, then goes back to neutral.
+  let cheerTimer = 0;
+  let tapFrom: { x: number; y: number } | null = null;
+  const stage = api.renderer.domElement;
+  stage.addEventListener('pointerdown', (e) => { tapFrom = { x: e.clientX, y: e.clientY }; });
+  stage.addEventListener('pointerup', (e) => {
+    if (tapFrom && Math.hypot(e.clientX - tapFrom.x, e.clientY - tapFrom.y) < 6) {
+      api.setEmotion(emotionKeys[0] ?? null);
+      clearTimeout(cheerTimer);
+      cheerTimer = window.setTimeout(() => api.setEmotion(null), CHEER_MS);
+    }
+    tapFrom = null;
+  });
+
   const resize = new ResizeObserver(() => { if (!destroyed) resizers.forEach((fn) => fn()); });
   resize.observe(el);
 
@@ -124,6 +141,7 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
   return {
     id,
     setEmotion(next) {
+      clearTimeout(cheerTimer);
       mood = next;
       api.setEmotion(next < 0 ? null : emotionKeys[next] ?? null);
     },
@@ -150,6 +168,7 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
     },
     destroy() {
       destroyed = true;
+      clearTimeout(cheerTimer);
       moodObserver.disconnect();
       resize.disconnect();
       api.controls.dispose();
