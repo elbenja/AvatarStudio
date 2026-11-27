@@ -8,6 +8,7 @@ export interface StudioState {
   mood: Mood;
   moving: boolean;
   speed: number;
+  /** How much the body moves: 1 is full, lower is calmer. Set once from reduced motion; there is no control for it. */
   bounce: number;
   /** Camera azimuth in degrees, two-way bound to dragging the stage. */
   turn: number;
@@ -20,12 +21,10 @@ export type StudioAction =
   | { type: 'nextMood' }
   | { type: 'moving'; moving: boolean }
   | { type: 'speed'; speed: number }
-  | { type: 'bounce'; bounce: number }
   | { type: 'turn'; turn: number }
   | { type: 'togglePause' };
 
 export const SPEED = { min: 0.2, max: 2, step: 0.05 } as const;
-export const BOUNCE = { min: 0, max: 2, step: 0.05 } as const;
 export const TURN = { min: -180, max: 180, step: 1, home: 35 } as const;
 
 export function initialStudio(calm: boolean): StudioState {
@@ -41,7 +40,6 @@ export function studioReducer(s: StudioState, a: StudioAction): StudioState {
     case 'moving': return { ...s, moving: a.moving };
     // Moving the speed slider is a clear wish to see motion: it also un-pauses.
     case 'speed': return { ...s, speed: a.speed, paused: false };
-    case 'bounce': return { ...s, bounce: a.bounce };
     case 'turn': return s.turn === a.turn ? s : { ...s, turn: a.turn };
     case 'togglePause': return { ...s, paused: !s.paused };
   }

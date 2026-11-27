@@ -32,6 +32,14 @@
 
 .sd-btn--wide { width: 100%; height: var(--sd-hit); }
 
+.sd-btn--go { background: var(--sd-well); color: var(--sd-go); box-shadow: inset 0 0 0 1px var(--sd-line-strong), var(--sd-shadow-pill); }
+.sd-btn--go:hover { background: var(--sd-well-hover); color: var(--sd-go); box-shadow: inset 0 0 0 1px var(--sd-line-strong), var(--sd-shadow-float); }
+.sd-btn--go .sd-badge { background: var(--sd-surface); }
+
+.sd-btn--lg { height: 48px; padding: 0 20px; border-radius: var(--sd-r-icon); font-size: var(--sd-text-lg); }
+.sd-btn--lg .sd-ico { width: 22px; height: 22px; }
+.sd-btn:has(.sd-badge) { padding-right: 12px; }
+
 .sd-btn .sd-ico { transition: transform var(--sd-med) var(--sd-out); }
 .sd-btn:hover .sd-ico { transform: rotate(-5deg); }
 .sd-btn:hover .sd-ico--end { transform: translateX(2px); }

@@ -1,0 +1,5 @@
+.sd-badge {
+  display: inline-flex; align-items: center; height: 20px; padding: 0 7px;
+  border-radius: var(--sd-r-pill); background: var(--sd-well); color: var(--sd-ink);
+  font-size: var(--sd-text-xs); font-weight: 500; line-height: 1; white-space: nowrap;
+}

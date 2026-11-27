@@ -18,12 +18,15 @@
   --sd-muted: #6b6b6b;
   --sd-faint: #b9b9b9;
   --sd-line: #ececec;
+  --sd-line-strong: #dedede;
 
   /* Accents */
   --sd-blue: #2f80ff;
   --sd-blue-halo: rgba(47, 128, 255, 0.18);
   --sd-blush: #f7b4b4;
   --sd-spark: #f5b400;
+  /* Go: the green label and glyph of a control that starts something live. Deep enough for text on --sd-well (5.4:1). */
+  --sd-go: #16732f;
   --sd-sweep: linear-gradient(90deg, rgba(47, 128, 255, 0) 0%, rgba(47, 128, 255, 0.8) 22%, rgba(139, 92, 246, 0.8) 40%, rgba(244, 98, 42, 0.85) 58%, rgba(255, 201, 61, 0.8) 76%, rgba(255, 201, 61, 0) 100%);
 
   /* About card */

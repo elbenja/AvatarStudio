@@ -15,14 +15,16 @@
 .sd-phone-stage.is-lifted { transform: translateY(-118px) scale(0.8); }
 .sd-phone-stage.is-lifted-more { transform: translateY(-196px) scale(0.6); }
 
-.sd-phone-rail {
-  position: absolute; left: 12px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); z-index: 6;
+.sd-phone-float {
+  position: absolute; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); z-index: 6;
   transition: opacity var(--sd-med) var(--sd-out), transform var(--sd-slow) var(--sd-spring), visibility 0s linear 0s;
 }
-.sd-phone-rail.is-hidden {
+.sd-phone-float.is-hidden {
   opacity: 0; visibility: hidden; pointer-events: none; transform: translateY(8px) scale(0.94);
   transition: opacity var(--sd-fast) linear, transform var(--sd-fast) linear, visibility 0s linear var(--sd-fast);
 }
+.sd-phone-rail { left: 12px; }
+.sd-phone-voice { left: 50%; translate: -50% 0; }
 
 .sd-phone-sheet { position: absolute; left: 12px; right: 12px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); z-index: 7; }
 /* The wrapper keeps the closed sheet's height; let taps through it to the About button below. */

@@ -1,0 +1,20 @@
+.sd-pop {
+  position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 20;
+  width: min(328px, calc(100vw - 24px)); padding: 12px 12px 14px;
+  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-panel);
+  text-align: left; translate: -50% 0;
+  animation: sd-pop-in var(--sd-slow) var(--sd-out) both;
+}
+/* The point, aimed at the control below. */
+.sd-pop::after {
+  content: ""; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 14px;
+  border-radius: 0 0 3px 0; background: var(--sd-surface); transform: translateX(-50%) rotate(45deg);
+}
+.sd-pop-media { overflow: hidden; margin-bottom: 14px; border-radius: var(--sd-r-card); background: var(--sd-well); }
+.sd-pop-media img { display: block; width: 100%; height: auto; }
+.sd-pop-title { margin: 0 4px 4px; font-size: var(--sd-text-lg); font-weight: 600; line-height: 1.3; }
+.sd-pop-text { margin: 0 4px; color: var(--sd-muted); font-size: var(--sd-text-base); line-height: 1.45; }
+.sd-pop-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+@keyframes sd-pop-in { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .sd-pop { animation: none; } }

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import './Slider.css';
 
-export type SliderUnit = 'times' | 'plain' | 'degrees';
+export type SliderUnit = 'times' | 'degrees';
 
 export interface SliderProps {
   label: string;
@@ -14,7 +14,7 @@ export interface SliderProps {
 }
 
 const format = (value: number, unit: SliderUnit) =>
-  unit === 'degrees' ? `${Math.round(value)}°` : value.toFixed(1) + (unit === 'times' ? '×' : '');
+  unit === 'degrees' ? `${Math.round(value)}°` : `${value.toFixed(1)}×`;
 
 /** A native range input: keyboard, screen readers and touch work as the platform expects. */
 export function Slider({ label, value, min, max, step = 0.05, unit = 'times', onChange }: SliderProps) {
