@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CHARACTERS } from '../../../avatar/characters';
 import type { CharacterId } from '../../../avatar/types';
+import { TURN } from '../../../state/studio';
 import { usePrefersReducedMotion } from '../../../hooks/useMediaQuery';
 import { Button } from '../../atoms/Button/Button';
 import { Tag } from '../../atoms/Tag/Tag';
@@ -50,7 +51,7 @@ export function OnboardingCard({ onContinue, interval = 3 }: OnboardingCardProps
 
       <div className="sd-card-hero">
         <div className="sd-card-stage">
-          <Stage who={who} mood={-1} moving turn={35} pad={0.98} background={STAGE_BG} sweep={false} wideLean />
+          <Stage who={who} mood={-1} moving turn={TURN.home} pad={0.98} background={STAGE_BG} sweep={false} wideLean />
         </div>
         <div className="sd-card-hem" aria-hidden="true" />
         <div className="sd-card-tags" aria-hidden="true">

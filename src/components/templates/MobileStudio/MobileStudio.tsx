@@ -71,7 +71,7 @@ export function MobileStudio({ state, character, actions, downloads, live }: Stu
           {shown === 'emotion' && <EmotionPicker cols={8} collapsible={false} mood={state.mood} onPick={withTick(actions.setMood)} />}
           {shown === 'motion' && (
             <>
-              <MotionSwitch row moving={state.moving} moveLabel={character.moveLabel} onChange={withTick(actions.setMoving)} />
+              <MotionSwitch row collapsible={false} moving={state.moving} moveLabel={character.moveLabel} onChange={withTick(actions.setMoving)} />
               <div className="sd-phone-sliders">
                 <MotionPanel speed={state.speed} bounce={state.bounce} turn={state.turn} onSpeed={actions.setSpeed} onBounce={actions.setBounce} onTurn={actions.setTurn} />
               </div>
