@@ -1,10 +1,12 @@
 /* Layers, outside in: tilt (pointer) › kick (tap) › spin (always) › each dot on the ring.
    Inside each dot the same rotations run in reverse, so the dot always faces the viewer
-   as a round disc while perspective makes the near side of the ring larger. */
+   as a round disc while perspective makes the near side of the ring larger. Innermost, the ball is pushed by the pointer. */
 .sd-orbit {
-  --size: 112px; --dot: 11px; --rx: 50deg; --ry: -14deg;
+  --size: 112px; --dot: 11px; --rx: 50deg; --ry: -14deg; --spin: 5200ms;
+  /* Where the ring's far side sits at the resting tilt, in turns counter-clockwise from 12 o'clock. */
+  --far: 0.032;
   position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size);
-  margin: calc(var(--size) / -2); perspective: 340px; pointer-events: none;
+  margin: calc(var(--size) / -2); perspective: 240px; pointer-events: none;
   opacity: 0; transition: opacity var(--sd-med) var(--sd-out);
 }
 .sd-orbit.is-on { opacity: 1; }
@@ -13,9 +15,13 @@
 .sd-orbit-unkick, .sd-orbit-unspin, .sd-orbit-face { display: block; width: 100%; height: 100%; transform-style: preserve-3d; }
 
 .sd-orbit-tilt { transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 700ms var(--sd-out); }
+/* The face's frame is square to the screen, so the ball's `translate` (set by the pointer push) moves it in screen space. */
+.sd-orbit-ball { display: block; width: 100%; height: 100%; border-radius: 999px; background: var(--c); }
 .sd-orbit-face {
-  border-radius: 999px; background: var(--c);
   transform: rotateY(calc(-1 * var(--ry))) rotateX(calc(-1 * var(--rx))); transition: transform 700ms var(--sd-out);
+  /* Each dot starts its depth cycle where it sits on the ring, so its far pass lines up with the far side. */
+  animation: sd-orbit-depth var(--spin) ease-in-out infinite paused;
+  animation-delay: calc((var(--at) + var(--far)) * -1 * var(--spin));
 }
 
 .sd-orbit-dot {
@@ -24,22 +30,34 @@
   transform: rotate(var(--a)) translateY(calc(var(--dot) / 2 - var(--size) / 2)) rotate(calc(-1 * var(--a)));
 }
 
-.sd-orbit-spin, .sd-orbit-unspin { animation: sd-orbit-turn 5200ms linear infinite paused; }
+.sd-orbit-spin, .sd-orbit-unspin { animation: sd-orbit-turn var(--spin) linear infinite paused; }
 .sd-orbit-unspin { animation-direction: reverse; }
-.sd-orbit.is-on .sd-orbit-spin, .sd-orbit.is-on .sd-orbit-unspin { animation-play-state: running; }
+.sd-orbit.is-on .sd-orbit-spin, .sd-orbit.is-on .sd-orbit-unspin, .sd-orbit.is-on .sd-orbit-face { animation-play-state: running; }
 
-/* A tap: one extra turn that eases out. The ring and its counter-turn restart in the same frame. */
+/* A tap: one extra turn that eases out. The ring and its counter-turn restart in the same frame.
+   The counter-turn has its own keyframes, not `reverse`: reversing also flips the easing, so the two would
+   drift apart mid-turn and the dots would swing edge-on. */
 .sd-orbit.is-kick-a .sd-orbit-kick { animation: sd-orbit-kick-a 1100ms var(--sd-out); }
-.sd-orbit.is-kick-a .sd-orbit-unkick { animation: sd-orbit-kick-a 1100ms var(--sd-out) reverse; }
+.sd-orbit.is-kick-a .sd-orbit-unkick { animation: sd-orbit-unkick-a 1100ms var(--sd-out); }
 .sd-orbit.is-kick-b .sd-orbit-kick { animation: sd-orbit-kick-b 1100ms var(--sd-out); }
-.sd-orbit.is-kick-b .sd-orbit-unkick { animation: sd-orbit-kick-b 1100ms var(--sd-out) reverse; }
+.sd-orbit.is-kick-b .sd-orbit-unkick { animation: sd-orbit-unkick-b 1100ms var(--sd-out); }
 
 @keyframes sd-orbit-turn { to { transform: rotate(360deg); } }
 @keyframes sd-orbit-kick-a { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
 @keyframes sd-orbit-kick-b { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
+@keyframes sd-orbit-unkick-a { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes sd-orbit-unkick-b { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+/* Depth: once per turn each dot passes the far side of the ring, where it shrinks and fades.
+   Eased both ways, the swing follows the dot's depth closely. The scale is uniform in all three axes: the face is
+   turned in 3D, so an x/y-only scale would squash it into an oval. */
+@keyframes sd-orbit-depth {
+  0%, 100% { scale: 0.78 0.78 0.78; opacity: 0.8; }
+  50% { scale: 1 1 1; opacity: 1; }
+}
 
 /* Reduced motion: the flat ring, still. */
 @media (prefers-reduced-motion: reduce) {
   .sd-orbit { --rx: 0deg; --ry: 0deg; }
-  .sd-orbit-spin, .sd-orbit-unspin { animation: none; }
+  .sd-orbit-spin, .sd-orbit-unspin, .sd-orbit-face { animation: none; }
 }
