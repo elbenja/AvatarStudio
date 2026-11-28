@@ -57,7 +57,7 @@ export function OnboardingCard({ onContinue, interval = 3, live = true }: Onboar
 
       <div className="sd-card-hero">
         <div className="sd-card-stage">
-          <Stage who={who} mood={-1} moving turn={TURN.home} live={live} warm pad={0.98} background={STAGE_BG} sweep={false} wideLean />
+          <Stage who={who} mood={-1} moving turn={TURN.home} live={live} warm pad={0.98} background={STAGE_BG} sweep={false} pointer="face" />
         </div>
         <div className="sd-card-hem" aria-hidden="true" />
         <div className="sd-card-tags" aria-hidden="true">

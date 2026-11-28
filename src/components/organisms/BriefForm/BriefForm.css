@@ -1,0 +1,44 @@
+.sd-brief {
+  display: flex; flex-direction: column; gap: 24px; width: 100%; padding: 28px;
+  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-panel);
+}
+
+.sd-brief-progress { display: flex; align-items: center; justify-content: space-between; font-size: var(--sd-text-sm); color: var(--sd-muted); }
+.sd-brief-bars { display: flex; gap: 6px; }
+.sd-brief-bars span { width: 22px; height: 4px; border-radius: var(--sd-r-pill); background: var(--sd-line-strong); transition: background-color var(--sd-med) var(--sd-out); }
+.sd-brief-bars .is-on { background: var(--sd-ink); }
+
+/* Each step rises in; keyed, so it replays on every change. */
+.sd-brief-step { display: flex; flex-direction: column; gap: 20px; animation: sd-swap var(--sd-slow) var(--sd-out); }
+.sd-brief-head { display: flex; flex-direction: column; gap: 6px; }
+.sd-brief-title { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.25; letter-spacing: -0.015em; }
+/* Focused by script when a step changes, to announce it: no ring. */
+.sd-brief-title:focus-visible { outline: 0; }
+.sd-brief-sub { margin: 0; font-size: var(--sd-text-base); line-height: 1.5; color: var(--sd-muted); overflow-wrap: anywhere; }
+
+.sd-brief-set { margin: 0; padding: 0; border: 0; min-width: 0; }
+.sd-brief-legend { display: flex; align-items: baseline; gap: 6px; padding: 0; margin-bottom: 8px; font-size: var(--sd-text-md); font-weight: 500; }
+.sd-brief-legend span { font-weight: 400; color: var(--sd-muted); }
+.sd-brief-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+
+.sd-brief-error { margin: 0; padding: 10px 14px; border-radius: var(--sd-r-ctl); background: var(--sd-well); font-size: var(--sd-text-md); font-weight: 500; animation: sd-swap var(--sd-slow) var(--sd-out); }
+.sd-brief-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sd-brief-actions .sd-btn { height: var(--sd-hit); }
+
+.sd-brief-sent { align-items: flex-start; }
+.sd-brief-done {
+  display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--sd-r-pill);
+  background: var(--sd-ink); color: var(--sd-ink-inverse); animation: sd-pop var(--sd-settle) var(--sd-spring);
+}
+.sd-brief-recap { display: flex; flex-direction: column; width: 100%; margin: 0; padding: 2px 14px; border-radius: var(--sd-r-card); background: var(--sd-well); }
+.sd-brief-recap > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; font-size: var(--sd-text-base); }
+.sd-brief-recap > div + div { border-top: 1px solid var(--sd-line-strong); }
+.sd-brief-recap dt { flex: 0 0 auto; color: var(--sd-muted); }
+.sd-brief-clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.sd-brief-recap dd { margin: 0; min-width: 0; font-weight: 500; text-align: right; overflow-wrap: anywhere; }
+
+/* Too narrow for a label and its badge side by side. */
+@media (max-width: 419px) {
+  .sd-brief { padding: 24px 20px; }
+  .sd-brief-tiles { grid-template-columns: minmax(0, 1fr); }
+}

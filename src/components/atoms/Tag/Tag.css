@@ -4,6 +4,7 @@
   font-size: var(--sd-text-md); font-weight: 500; white-space: nowrap;
   animation: sd-float 4.2s ease-in-out infinite; animation-delay: var(--d, 0s);
 }
+.sd-tag--canvas { background: var(--sd-selected-hover); color: var(--sd-ink); }
 .sd-tag-text { display: inline-block; animation: sd-swap var(--sd-slow) var(--sd-out); }
 
 @keyframes sd-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }

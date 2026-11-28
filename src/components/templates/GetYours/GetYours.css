@@ -1,0 +1,24 @@
+/* The page scrolls inside its own box: html and body are fixed to the viewport for the studio. */
+.sd-gy { display: flex; flex-direction: column; height: 100%; overflow-y: auto; background: var(--sd-canvas); }
+
+.sd-gy-top {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex: 0 0 auto;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 20px 0;
+}
+
+.sd-gy-main {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 440px)); gap: 72px;
+  align-items: center; justify-content: center; flex: 1 0 auto;
+  padding: 32px 20px calc(48px + env(safe-area-inset-bottom, 0px));
+}
+
+.sd-gy-side { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+
+/* On a phone the side column dissolves: the pitch leads, the brief follows, what is included comes last. */
+@media (max-width: 959px) {
+  .sd-gy-top { padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 0; }
+  .sd-gy-main { grid-template-columns: minmax(0, 440px); gap: 32px; align-items: start; padding: 8px 16px calc(32px + env(safe-area-inset-bottom, 0px)); }
+  .sd-gy-side { display: contents; }
+  .sd-gy-pitch { order: -1; }
+  .sd-gy-top .sd-btn { height: var(--sd-hit); }
+}

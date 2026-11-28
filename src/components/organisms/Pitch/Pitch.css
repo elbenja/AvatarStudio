@@ -1,0 +1,41 @@
+.sd-pitch { display: flex; flex-direction: column; gap: 24px; width: 100%; }
+
+/* The hero: a stage taller and wider than the column, the copy pulled up over the character's feet. */
+/* --lift pulls the stage up past the head room the camera leaves above the character. */
+.sd-pitch--hero { --stage: 540px; --overlap: 150px; --hem: 250px; --lift: 88px; position: relative; gap: 0; margin-top: calc(var(--lift) * -1); }
+.sd-pitch-stage { display: flex; height: var(--stage); margin: 0 -72px; }
+.sd-pitch-stage > * { flex: 1 1 auto; min-width: 0; }
+/* The hem blurs what is behind it and fades to the page colour, so the character disappears behind the text. */
+.sd-pitch-hem {
+  position: absolute; left: -72px; right: -72px; top: calc(var(--stage) - var(--hem)); height: var(--hem); pointer-events: none;
+  background: linear-gradient(180deg, rgba(246, 246, 246, 0) 0%, var(--sd-canvas) 62%);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 45%);
+  mask-image: linear-gradient(180deg, transparent, #000 45%);
+}
+/* Tags float around the character, placed as fractions of the stage so they keep their spots at both sizes. */
+.sd-pitch-tags { position: absolute; inset: 0 0 auto; height: var(--stage); pointer-events: none; }
+.sd-pitch-tags > * { position: absolute; }
+.sd-pitch-tag-1 { right: 36px; top: calc(var(--stage) * 0.2); }
+.sd-pitch-tag-2 { left: 0; top: calc(var(--stage) * 0.44 + 16px); }
+.sd-pitch-tag-3 { right: -12px; top: calc(var(--stage) * 0.5 + 32px); }
+.sd-pitch--hero .sd-pitch-body { position: relative; margin-top: calc(var(--overlap) * -1); align-items: flex-start; }
+
+.sd-pitch-body { display: flex; flex-direction: column; gap: 12px; }
+.sd-pitch-title { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; text-wrap: balance; }
+.sd-pitch-text { margin: 0; font-size: var(--sd-text-lg); line-height: 1.5; color: var(--sd-muted); text-wrap: pretty; }
+
+.sd-pitch-list { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0; list-style: none; font-size: var(--sd-text-base); }
+.sd-pitch-list li { display: flex; align-items: center; gap: 10px; }
+.sd-pitch-list .sd-ico { color: var(--sd-muted); }
+
+.sd-pitch-price { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 0; padding-top: 20px; border-top: 1px solid var(--sd-line-strong); font-size: var(--sd-text-base); color: var(--sd-muted); }
+.sd-pitch-price .sd-badge { background: var(--sd-ink); color: var(--sd-ink-inverse); }
+.sd-pitch-price .sd-mono { color: var(--sd-ink); font-weight: 500; }
+
+@media (max-width: 959px) {
+  .sd-pitch--hero { --stage: 400px; --overlap: 120px; --hem: 200px; --lift: 0px; }
+  .sd-pitch-stage { margin: 0 -16px; }
+  .sd-pitch-hem { left: -16px; right: -16px; }
+  .sd-pitch-tag-3 { right: 0; }
+}

@@ -1,0 +1,29 @@
+.sd-check {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  height: var(--sd-hit); padding: 0 12px; min-width: 0;
+  border-radius: var(--sd-r-ctl); background: var(--sd-well); box-shadow: inset 0 0 0 1px var(--sd-line);
+  font-size: var(--sd-text-base); font-weight: 500; white-space: nowrap;
+  cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--sd-fast) var(--sd-out), box-shadow var(--sd-fast) var(--sd-out), transform var(--sd-slow) var(--sd-spring);
+}
+.sd-check:hover { background: var(--sd-well-hover); }
+.sd-check:active { transform: scale(0.97); transition-duration: var(--sd-press); }
+.sd-check.is-on { background: var(--sd-surface); box-shadow: inset 0 0 0 2px var(--sd-ink); }
+.sd-check:has(:focus-visible) { outline: 2px solid var(--sd-blue); outline-offset: 2px; }
+.sd-check-label { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+.sd-check-box {
+  display: grid; place-items: center; flex: 0 0 auto; width: 18px; height: 18px;
+  border-radius: var(--sd-r-chip); background: var(--sd-surface); color: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sd-faint);
+  transition: background-color var(--sd-fast) var(--sd-out), box-shadow var(--sd-fast) var(--sd-out);
+}
+.sd-check-box .sd-ico { width: 14px; height: 14px; }
+.sd-check-box svg { stroke-width: 2.5; }
+.sd-check.is-on .sd-check-box { background: var(--sd-ink); color: var(--sd-ink-inverse); box-shadow: none; animation: sd-pop var(--sd-slow) var(--sd-spring); }
+
+/* Disabled drops to grey fills, never a fade. */
+.sd-check.is-disabled { background: var(--sd-well); color: var(--sd-muted); cursor: default; }
+.sd-check.is-disabled:active { transform: none; }
+.sd-check.is-disabled .sd-check-box { background: var(--sd-selected); box-shadow: inset 0 0 0 1.5px var(--sd-line-strong); }
+.sd-check.is-disabled .sd-badge { background: var(--sd-surface); }

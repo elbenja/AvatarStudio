@@ -8,3 +8,5 @@ references/
 # Local editor/agent config
 .claude/
 .vercel
+# Local environment
+*.local

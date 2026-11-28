@@ -1,0 +1,18 @@
+.sd-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.sd-field-label { display: flex; align-items: baseline; gap: 6px; font-size: var(--sd-text-md); font-weight: 500; }
+.sd-field-hint { font-weight: 400; color: var(--sd-muted); }
+
+.sd-field-input {
+  width: 100%; height: var(--sd-hit); padding: 0 14px;
+  border: 0; border-radius: var(--sd-r-ctl); outline: 0;
+  background: var(--sd-well); color: var(--sd-ink); box-shadow: inset 0 0 0 1px var(--sd-line);
+  font: inherit; font-size: var(--sd-text-lg); letter-spacing: inherit;
+  transition: background-color var(--sd-fast) var(--sd-out), box-shadow var(--sd-fast) var(--sd-out);
+}
+.sd-field-input::placeholder { color: var(--sd-muted); opacity: 1; }
+.sd-field-input:hover { box-shadow: inset 0 0 0 1px var(--sd-line-strong); }
+/* Focus is a blue hairline plus a soft halo, never a heavy border. */
+.sd-field-input:focus-visible { outline: 0; background: var(--sd-surface); box-shadow: inset 0 0 0 1px var(--sd-blue), 0 0 0 3px var(--sd-blue-halo); }
+
+/* The text area sizes itself from its rows, then from its content (see TextField.tsx). */
+.sd-field-input--area { display: block; height: auto; padding: 11px 14px; line-height: 1.4; resize: none; overflow: hidden; }

@@ -3,7 +3,7 @@ import FRAMING from 'virtual:avatar/framing';
 import { CHARACTERS, characterById } from '../../../avatar/characters';
 import { loadAvatar, mountAvatar, whenQuiet } from '../../../avatar/mount';
 import { OrbitLoader } from '../../atoms/OrbitLoader/OrbitLoader';
-import type { AvatarHandle, CharacterId, Mood } from '../../../avatar/types';
+import type { AvatarHandle, CharacterId, Mood, MountOptions } from '../../../avatar/types';
 import './Stage.css';
 
 export interface StageProps {
@@ -22,8 +22,8 @@ export interface StageProps {
   sweep?: boolean;
   /** Head room around the character (1 = tight). */
   pad?: number;
-  /** The character turns to face whichever side of the screen the pointer is on, not just lean toward it. */
-  wideLean?: boolean;
+  /** How the character answers the pointer: lean toward it (the default), turn to face it, or ignore it. Read once, when a character is sculpted. */
+  pointer?: MountOptions['pointer'];
   /** Once the character on stage is up, sculpt the others in the background, so picking one is instant. */
   warm?: boolean;
   onTurn?: (degrees: number) => void;
@@ -86,7 +86,7 @@ export function Stage(props: StageProps) {
       handles.current[id] = mountAvatar(slot, id, mod, {
         background,
         pad,
-        wideLean: latest.current.wideLean,
+        pointer: latest.current.pointer,
         onReady: () => {
           if (gone.current) return;
           drawn.current[id] = true;
