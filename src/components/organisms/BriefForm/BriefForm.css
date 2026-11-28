@@ -19,16 +19,45 @@
 .sd-brief-set { margin: 0; padding: 0; border: 0; min-width: 0; }
 .sd-brief-legend { display: flex; align-items: baseline; gap: 6px; padding: 0; margin-bottom: 8px; font-size: var(--sd-text-md); font-weight: 500; }
 .sd-brief-legend span { font-weight: 400; color: var(--sd-muted); }
+.sd-brief-set[data-invalid] .sd-brief-legend span { color: var(--sd-alert); }
 .sd-brief-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 
 .sd-brief-error { margin: 0; padding: 10px 14px; border-radius: var(--sd-r-ctl); background: var(--sd-well); font-size: var(--sd-text-md); font-weight: 500; animation: sd-swap var(--sd-slow) var(--sd-out); }
 .sd-brief-actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .sd-brief-actions .sd-btn { height: var(--sd-hit); }
 
-.sd-brief-sent { align-items: flex-start; }
-.sd-brief-done {
-  display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--sd-r-pill);
-  background: var(--sd-ink); color: var(--sd-ink-inverse); animation: sd-pop var(--sd-settle) var(--sd-spring);
+/* The receipt celebrates: the badge springs in and rings out, its check draws itself, confetti flies, then the rest rises in turn. */
+.sd-brief-sent { align-items: flex-start; animation: none; }
+.sd-brief-sent > * { animation: sd-swap var(--sd-settle) var(--sd-out) both; }
+.sd-brief-sent > :nth-child(2) { animation-delay: 260ms; }
+.sd-brief-sent > :nth-child(3) { animation-delay: 340ms; }
+.sd-brief-sent > :nth-child(4) { animation-delay: 420ms; }
+.sd-brief-sent > .sd-brief-done {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: var(--sd-r-pill);
+  background: var(--sd-ink); color: var(--sd-ink-inverse); animation: sd-brief-pop 620ms var(--sd-spring) both;
+}
+.sd-brief-done::after { content: ""; position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 2px var(--sd-ink); opacity: 0; animation: sd-brief-ring 700ms var(--sd-out) 180ms; }
+.sd-brief-done path { stroke-dasharray: 21; animation: sd-brief-draw 360ms var(--sd-out) 240ms both; }
+
+.sd-brief-burst { position: absolute; inset: 0; pointer-events: none; }
+.sd-brief-burst i {
+  --turn: calc(var(--i) * 36deg + 12deg);
+  position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 2px;
+  background: var(--sd-blue); opacity: 0; animation: sd-brief-fly 900ms var(--sd-out) 200ms;
+}
+.sd-brief-burst i:nth-child(4n + 2) { background: var(--sd-spark); border-radius: var(--sd-r-pill); }
+.sd-brief-burst i:nth-child(4n + 3) { background: var(--sd-blush); width: 8px; }
+.sd-brief-burst i:nth-child(4n + 4) { background: var(--sd-ink); width: 4px; height: 4px; border-radius: var(--sd-r-pill); }
+/* Every other piece flies further, so the burst is not a ring. */
+.sd-brief-burst i:nth-child(odd) { --far: 58px; }
+
+@keyframes sd-brief-pop { 0% { opacity: 0; transform: scale(0.3) rotate(-24deg); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes sd-brief-ring { 0% { opacity: 0.5; transform: scale(1); } 100% { opacity: 0; transform: scale(1.9); } }
+@keyframes sd-brief-draw { from { stroke-dashoffset: 21; } to { stroke-dashoffset: 0; } }
+@keyframes sd-brief-fly {
+  0% { opacity: 1; transform: rotate(var(--turn)) translateY(-14px) scale(0.4); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: rotate(var(--turn)) translateY(calc(var(--far, 40px) * -1)) rotate(120deg) scale(1); }
 }
 .sd-brief-recap { display: flex; flex-direction: column; width: 100%; margin: 0; padding: 2px 14px; border-radius: var(--sd-r-card); background: var(--sd-well); }
 .sd-brief-recap > div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; font-size: var(--sd-text-base); }

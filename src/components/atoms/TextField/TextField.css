@@ -16,3 +16,8 @@
 
 /* The text area sizes itself from its rows, then from its content (see TextField.tsx). */
 .sd-field-input--area { display: block; height: auto; padding: 11px 14px; line-height: 1.4; resize: none; overflow: hidden; }
+
+/* Needs fixing: the hairline turns to the alert colour, and the message rises in under it. */
+.sd-field-input[aria-invalid="true"] { box-shadow: inset 0 0 0 1px var(--sd-alert); }
+.sd-field-input[aria-invalid="true"]:focus-visible { box-shadow: inset 0 0 0 1px var(--sd-alert), 0 0 0 3px var(--sd-alert-halo); }
+.sd-field-error { margin: -2px 0 0; font-size: var(--sd-text-md); line-height: 1.4; color: var(--sd-alert); animation: sd-swap var(--sd-slow) var(--sd-out); }

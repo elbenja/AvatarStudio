@@ -9,7 +9,7 @@ import './GetYours.css';
 export interface GetYoursProps {
   /** Delivers a finished brief; see BriefForm. */
   onSend: (brief: Brief) => Promise<void>;
-  /** Where "Studio" and the receipt's link go. */
+  /** Where "Back" and the receipt's link go. */
   studioHref: string;
 }
 
@@ -20,7 +20,7 @@ export function GetYours({ onSend, studioHref }: GetYoursProps) {
     <div className="sd-gy">
       <header className="sd-gy-top sd-in">
         <Logo />
-        <Button href={studioHref} kind="float" label="Studio" />
+        <Button href={studioHref} kind="float" label="Back" />
       </header>
       <main className="sd-gy-main">
         <div className="sd-gy-form sd-in sd-in-1"><BriefForm onSend={onSend} studioHref={studioHref} onStep={setStep} /></div>
