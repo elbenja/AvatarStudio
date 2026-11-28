@@ -1,15 +1,11 @@
-/* Dressed like the About card: its gradient, a character standing on it, and a blurred hem the copy sits in. */
+/* Dressed like the About card: its gradient and white ring, a character standing on it, and a blurred hem
+   the copy sits in. */
 .sd-pop {
   position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 20;
   width: min(328px, calc(100vw - 24px));
-  border-radius: var(--sd-r-panel); background: var(--sd-card-bg); box-shadow: var(--sd-shadow-panel);
+  border-radius: var(--sd-r-panel); background: var(--sd-card-bg); box-shadow: var(--sd-shadow-card);
   text-align: left; translate: -50% 0;
   animation: sd-pop-in var(--sd-slow) var(--sd-out) both;
-}
-/* The point, aimed at the control below, in the colour the gradient ends on. */
-.sd-pop::after {
-  content: ""; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 14px;
-  border-radius: 0 0 3px 0; background: var(--sd-card-edge); transform: translateX(-50%) rotate(45deg);
 }
 
 .sd-pop-media { display: flex; justify-content: center; padding-top: 18px; }
