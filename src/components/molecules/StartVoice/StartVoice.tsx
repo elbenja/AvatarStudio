@@ -3,7 +3,7 @@ import { Button } from '../../atoms/Button/Button';
 import { Popover } from '../Popover/Popover';
 import './StartVoice.css';
 
-const TALKING = `${import.meta.env.BASE_URL}characters/glace-talk.webp`;
+const TALKING = `${import.meta.env.BASE_URL}characters/glace-talk-cutout.webp`;
 
 /** Voice chat isn't built yet: the button opens a popover that says what it will be. */
 export function StartVoice() {
@@ -20,10 +20,10 @@ export function StartVoice() {
             title="Voice Chat"
             trigger={trigger}
             onClose={close}
-            media={<img src={TALKING} alt="" width={800} height={500} />}
-            actions={<Button kind="soft" label="Got it" onClick={close} />}
+            media={<img src={TALKING} alt="" width={158} height={190} />}
+            actions={<Button kind="float" label="Got it" onClick={close} />}
           >
-            Talk to your character. It listens, reacts, and talks back. Coming soon.
+            It talks, listens, and reacts. Coming soon.
           </Popover>
         </div>
       )}

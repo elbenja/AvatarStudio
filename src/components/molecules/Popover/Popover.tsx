@@ -3,9 +3,9 @@ import './Popover.css';
 
 export interface PopoverProps {
   title: string;
-  /** An illustration above the title. */
+  /** A character or illustration standing on the card, above the copy. */
   media?: ReactNode;
-  /** Buttons along the bottom; the last one takes focus when it opens. */
+  /** Buttons beside the copy; the last one takes focus when it opens. */
   actions: ReactNode;
   /** Escape, or a press anywhere outside the popover and its trigger. */
   onClose: () => void;
@@ -42,9 +42,13 @@ export function Popover({ title, media, actions, onClose, trigger, children }: P
   return (
     <div ref={ref} className="sd-pop" role="dialog" aria-labelledby={titleId}>
       {media && <div className="sd-pop-media">{media}</div>}
-      <h2 id={titleId} className="sd-pop-title">{title}</h2>
-      <div className="sd-pop-text">{children}</div>
-      <div className="sd-pop-actions">{actions}</div>
+      <div className="sd-pop-foot">
+        <div className="sd-pop-copy">
+          <h2 id={titleId} className="sd-pop-title">{title}</h2>
+          <div className="sd-pop-text">{children}</div>
+        </div>
+        <div className="sd-pop-actions">{actions}</div>
+      </div>
     </div>
   );
 }

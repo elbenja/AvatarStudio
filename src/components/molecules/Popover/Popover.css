@@ -1,20 +1,38 @@
+/* Dressed like the About card: its gradient, a character standing on it, and a blurred hem the copy sits in. */
 .sd-pop {
   position: absolute; left: 50%; bottom: calc(100% + 14px); z-index: 20;
-  width: min(328px, calc(100vw - 24px)); padding: 12px 12px 14px;
-  border-radius: var(--sd-r-panel); background: var(--sd-surface); box-shadow: var(--sd-shadow-panel);
+  width: min(328px, calc(100vw - 24px));
+  border-radius: var(--sd-r-panel); background: var(--sd-card-bg); box-shadow: var(--sd-shadow-panel);
   text-align: left; translate: -50% 0;
   animation: sd-pop-in var(--sd-slow) var(--sd-out) both;
 }
-/* The point, aimed at the control below. */
+/* The point, aimed at the control below, in the colour the gradient ends on. */
 .sd-pop::after {
   content: ""; position: absolute; left: 50%; bottom: -6px; width: 14px; height: 14px;
-  border-radius: 0 0 3px 0; background: var(--sd-surface); transform: translateX(-50%) rotate(45deg);
+  border-radius: 0 0 3px 0; background: var(--sd-card-edge); transform: translateX(-50%) rotate(45deg);
 }
-.sd-pop-media { overflow: hidden; margin-bottom: 14px; border-radius: var(--sd-r-card); background: var(--sd-well); }
-.sd-pop-media img { display: block; width: 100%; height: auto; }
-.sd-pop-title { margin: 0 4px 4px; font-size: var(--sd-text-lg); font-weight: 600; line-height: 1.3; }
-.sd-pop-text { margin: 0 4px; color: var(--sd-muted); font-size: var(--sd-text-base); line-height: 1.45; }
-.sd-pop-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+.sd-pop-media { display: flex; justify-content: center; padding-top: 18px; }
+.sd-pop-media img { display: block; width: auto; height: 190px; }
+
+/* The hem rises over the character's feet and blurs them out; the copy and actions sit in it side by side. */
+.sd-pop-foot {
+  position: relative; display: flex; align-items: center; gap: 16px;
+  margin-top: -41px; padding: 56px 16px 20px;
+}
+.sd-pop-foot::before {
+  content: ""; position: absolute; inset: 0 0 auto; height: 70px; pointer-events: none;
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 60%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 60%, transparent);
+}
+.sd-pop:not(:has(.sd-pop-media)) .sd-pop-foot { margin-top: 0; padding-top: 20px; }
+.sd-pop:not(:has(.sd-pop-media)) .sd-pop-foot::before { display: none; }
+
+.sd-pop-copy { position: relative; flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; padding: 0 4px; }
+.sd-pop-title { margin: 0; font-size: var(--sd-text-lg); font-weight: 600; line-height: 1.3; }
+.sd-pop-text { margin: 0; color: var(--sd-card-text); font-size: var(--sd-text-base); line-height: 1.43; }
+.sd-pop-actions { position: relative; flex: none; display: flex; gap: 8px; }
 
 @keyframes sd-pop-in { from { opacity: 0; transform: translateY(6px) scale(0.985); } to { opacity: 1; transform: none; } }
 @media (prefers-reduced-motion: reduce) { .sd-pop { animation: none; } }
