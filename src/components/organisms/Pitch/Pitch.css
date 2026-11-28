@@ -34,7 +34,7 @@
 .sd-pitch-price .sd-mono { color: var(--sd-ink); font-weight: 500; }
 
 @media (max-width: 959px) {
-  .sd-pitch--hero { --stage: 400px; --overlap: 120px; --hem: 200px; --lift: 0px; }
+  .sd-pitch--hero { --stage: 400px; --overlap: 120px; --hem: 200px; --lift: 48px; }
   .sd-pitch-stage { margin: 0 -16px; }
   .sd-pitch-hem { left: -16px; right: -16px; }
   .sd-pitch-tag-3 { right: 0; }

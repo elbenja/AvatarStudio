@@ -3,6 +3,7 @@ import FRAMING from 'virtual:avatar/framing';
 import { CHARACTERS, characterById } from '../../../avatar/characters';
 import { loadAvatar, mountAvatar, whenQuiet } from '../../../avatar/mount';
 import { OrbitLoader } from '../../atoms/OrbitLoader/OrbitLoader';
+import { Sweep } from '../../atoms/Sweep/Sweep';
 import type { AvatarHandle, CharacterId, Mood, MountOptions } from '../../../avatar/types';
 import './Stage.css';
 
@@ -18,7 +19,7 @@ export interface StageProps {
   live?: boolean;
   /** Clear colour of the 3D canvas. */
   background?: string;
-  /** A colour glint sweeps across when the character changes. */
+  /** A colour glint sweeps across the stage when the character changes. False when the page sweeps a wider area itself. */
   sweep?: boolean;
   /** Head room around the character (1 = tight). */
   pad?: number;
@@ -63,8 +64,6 @@ export function Stage(props: StageProps) {
 
   const [ready, setReady] = useState<PerCharacter<boolean>>({});
   const [failed, setFailed] = useState<PerCharacter<boolean>>({});
-  const [sweep, setSweep] = useState(0);
-  const firstWho = useRef(who);
 
   /** Only the character on stage keeps rendering; the others hold their last frame once they have drawn one. */
   const run = () => {
@@ -150,11 +149,9 @@ export function Stage(props: StageProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // A new character on stage: sweep a glint across, then boot it if it has never been on.
+  // A new character on stage: boot it if it has never been on.
   useEffect(() => {
     run();
-    if (who !== firstWho.current && sweepOn) setSweep((n) => n + 1);
-    firstWho.current = who;
     if (!live || handles.current[who] || booting.current[who] || failed[who]) return;
 
     let cancelled = false;
@@ -188,7 +185,7 @@ export function Stage(props: StageProps) {
 
   return (
     <div ref={rootRef} className="sd-stage" role="img" aria-label={`${character.title}, live 3D character. Drag to turn, tap to hop.`}>
-      {sweep > 0 && <div key={sweep} className="sd-glimm" aria-hidden="true" />}
+      {sweepOn && <Sweep trigger={who} />}
 
       {/* Only when the 3D cannot start. Sized by the same rule as the camera (see Stage.css). */}
       {failed[who] && (
