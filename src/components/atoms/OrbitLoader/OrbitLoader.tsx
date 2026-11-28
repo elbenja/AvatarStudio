@@ -19,6 +19,8 @@ const REACH = { lean: 24, turn: 24 };
 const PUSH = { reach: 64, most: 18, tap: 9 };
 /** The spring pulling each dot home: its stiffness, and how much speed survives a frame. */
 const SPRING = { pull: 0.14, keep: 0.76 };
+/** A tap's extra turns and how long they take to ease out, in ms. */
+const KICK = { turns: 1, ms: 1100 };
 
 export interface OrbitLoaderProps {
   /** Shown and spinning. Off, it fades out and its animations pause. */
@@ -26,8 +28,8 @@ export interface OrbitLoaderProps {
 }
 
 /**
- * A ring of colour dots orbiting in a tilted ellipse, drawn in 2D so every browser keeps the dots round. The spin is CSS on the compositor, so it keeps turning while the main
- * thread is busy sculpting a character. The ring leans toward the pointer, the dots shy away from it on springs,
+ * A ring of colour dots orbiting in a tilted ellipse. The dots only slide, so every browser keeps them round. The
+ * spin is CSS on the compositor, so it keeps turning while the main thread is busy sculpting a character. The ring leans toward the pointer, the dots shy away from it on springs,
  * and a tap anywhere scatters them and gives the ring an extra turn.
  */
 export function OrbitLoader({ on }: OrbitLoaderProps) {
@@ -41,13 +43,24 @@ export function OrbitLoader({ on }: OrbitLoaderProps) {
     const balls = faces.map((f) => f.firstElementChild as HTMLElement);
     const dots = faces.map(() => ({ x: 0, y: 0, vx: 0, vy: 0 }));
     const size = balls[0].offsetWidth;
+    // The orbit's slides and depth swings. A tap speeds them all up together, then eases them back.
+    const spins = el.getAnimations({ subtree: true }).filter((a) => a instanceof CSSAnimation);
+    const turn = Number(spins[0]?.effect?.getTiming().duration) || 0;
     let pointer: { x: number; y: number } | null = null;
     let burst = false;
+    let kickAt = -1;
 
     // Each frame: push every dot away from the pointer, then let its spring settle it. The push is measured in
     // screen px and divided by the dot's on-screen scale, so near and far dots move the same visible distance.
     let frame = requestAnimationFrame(function step() {
       frame = requestAnimationFrame(step);
+      // The extra speed eases out along (1 - u)², which adds up to KICK.turns over KICK.ms.
+      if (kickAt >= 0) {
+        const u = (performance.now() - kickAt) / KICK.ms;
+        const rate = u < 1 ? 1 + ((3 * KICK.turns * turn) / KICK.ms) * (1 - u) ** 2 : 1;
+        spins.forEach((a) => { a.playbackRate = rate; });
+        if (u >= 1) kickAt = -1;
+      }
       faces.forEach((face, i) => {
         const d = dots[i];
         let tx = 0;
@@ -90,14 +103,10 @@ export function OrbitLoader({ on }: OrbitLoaderProps) {
       el.style.setProperty('--k', `${Math.cos(((REST.lean - y * REACH.lean) * Math.PI) / 180)}`);
       el.style.setProperty('--tz', `${REST.turn + x * REACH.turn}deg`);
     };
-    // Two classes take turns so each tap restarts the turn.
-    let kick = false;
     const tap = (e: PointerEvent) => {
       lean(e);
       burst = true;
-      kick = !kick;
-      el.classList.toggle('is-kick-a', kick);
-      el.classList.toggle('is-kick-b', !kick);
+      kickAt = performance.now();
     };
     // A finger lifts and a mouse leaves the window: the dots spring home.
     const lift = (e: PointerEvent) => { if (e.pointerType !== 'mouse') pointer = null; };
@@ -109,6 +118,7 @@ export function OrbitLoader({ on }: OrbitLoaderProps) {
     window.addEventListener('pointerout', leave, { passive: true });
     return () => {
       cancelAnimationFrame(frame);
+      spins.forEach((a) => { a.playbackRate = 1; });
       balls.forEach((b) => { b.style.translate = ''; });
       window.removeEventListener('pointermove', lean);
       window.removeEventListener('pointerdown', tap);
@@ -121,17 +131,13 @@ export function OrbitLoader({ on }: OrbitLoaderProps) {
   return (
     <div ref={root} className={'sd-orbit' + (on ? ' is-on' : '')} aria-hidden="true">
       <div className="sd-orbit-tilt">
-        <div className="sd-orbit-kick">
-          <div className="sd-orbit-spin">
-            {DOTS.map((c, i) => (
-              <span key={c} className="sd-orbit-dot" style={{ '--a': `${FIRST + i * STEP}deg`, '--at': (FIRST + i * STEP) / 360, '--c': c } as CSSProperties}>
-                <span className="sd-orbit-unkick">
-                  <span className="sd-orbit-unspin"><span className="sd-orbit-face"><span className="sd-orbit-ball" /></span></span>
-                </span>
-              </span>
-            ))}
-          </div>
-        </div>
+        {DOTS.map((c, i) => (
+          <span key={c} className="sd-orbit-x" style={{ '--at': (FIRST + i * STEP) / 360, '--c': c } as CSSProperties}>
+            <span className="sd-orbit-y">
+              <span className="sd-orbit-dot"><span className="sd-orbit-face"><span className="sd-orbit-ball" /></span></span>
+            </span>
+          </span>
+        ))}
       </div>
     </div>
   );

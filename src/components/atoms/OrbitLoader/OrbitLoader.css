@@ -1,7 +1,9 @@
-/* All 2D, so every browser draws it the same. Layers, outside in: tilt (squashes the ring into an ellipse and
-   turns it, following the pointer) › kick (tap) › spin (always) › each dot on the ring. Inside each dot the spin
-   and kick are undone and the squash is stretched back, so the dot is always an upright circle. Innermost, the ball
-   is pushed by the pointer. Depth is faked: dots shrink and fade as they pass the far (top) side of the ring. */
+/* All 2D, and the dots only ever slide, never turn. Layers, outside in: tilt (squashes the ring into an ellipse and
+   turns it, following the pointer) › per dot, a horizontal and a vertical slide whose eased swings trace the circle
+   › the face, which stretches the squash back and undoes the turn. Only slides sit between the squash and the
+   stretch, and a slide survives both unchanged, so the dot is an upright circle at every instant: if a browser lets
+   the two slides drift apart, the path wobbles but the dot keeps its shape. Innermost, the ball is pushed by the
+   pointer. Depth is faked: dots shrink and fade as they pass the far (top) side of the ring. */
 
 /* Registered so a change to the lean eases; where unsupported it jumps, and the dots still stay round. */
 @property --k { syntax: "<number>"; inherits: true; initial-value: 1; }
@@ -9,6 +11,8 @@
 
 .sd-orbit {
   --size: 112px; --dot: 11px; --spin: 5200ms;
+  /* Eases a slide from one end to the other along a sine, so the two slides together trace a circle. */
+  --sine: cubic-bezier(0.37, 0, 0.63, 1);
   /* The ring's squash (1 is a full circle) and turn; the pointer moves both. Mirrors REST in OrbitLoader.tsx. */
   --k: 0.643; --tz: -10deg;
   position: absolute; left: 50%; top: 50%; width: var(--size); height: var(--size);
@@ -18,42 +22,40 @@
 }
 .sd-orbit.is-on { opacity: 1; }
 
-.sd-orbit-tilt, .sd-orbit-kick, .sd-orbit-spin { position: absolute; inset: 0; }
-.sd-orbit-unkick, .sd-orbit-unspin, .sd-orbit-face, .sd-orbit-ball { display: block; width: 100%; height: 100%; }
+.sd-orbit-tilt { position: absolute; inset: 0; transform: rotate(var(--tz)) scaleY(var(--k)); }
 
-.sd-orbit-tilt { transform: rotate(var(--tz)) scaleY(var(--k)); }
+/* The slides span the dot centres' square, so ±50% of their own size reaches the ring's edge. */
+.sd-orbit-x { position: absolute; inset: calc(var(--dot) / 2); }
+.sd-orbit-y { position: absolute; inset: 0; }
+.sd-orbit-dot {
+  position: absolute; left: 50%; top: 50%; width: var(--dot); height: var(--dot); margin: calc(var(--dot) / -2);
+}
+.sd-orbit-face, .sd-orbit-ball { display: block; width: 100%; height: 100%; }
+
+/* --at is where the dot sits, in turns clockwise from the top. Each slide starts at its far left or top; the
+   horizontal one is a quarter turn ahead of the vertical one. */
+.sd-orbit-x {
+  animation: sd-orbit-x var(--spin) var(--sine) infinite paused;
+  animation-delay: calc((var(--at) + 0.25) * -1 * var(--spin));
+}
+.sd-orbit-y {
+  animation: sd-orbit-y var(--spin) var(--sine) infinite paused;
+  animation-delay: calc(var(--at) * -1 * var(--spin));
+}
 .sd-orbit-face {
-  /* Undo the squash. Only rotations sit between this and the tilt, and they cancel, so the dot is round. */
-  transform: scaleY(calc(1 / var(--k)));
-  /* Each dot starts its depth cycle where it sits on the ring, so its far pass lines up with the top. */
+  /* Stretch the squash back and undo the turn, so the face's frame is the screen's. */
+  transform: scaleY(calc(1 / var(--k))) rotate(calc(-1 * var(--tz)));
+  /* In step with the vertical slide, so the far pass lines up with the top. */
   animation: sd-orbit-depth var(--spin) ease-in-out infinite paused;
   animation-delay: calc(var(--at) * -1 * var(--spin));
 }
-/* The face's frame matches the screen, so the ball's `translate` (set by the pointer push) moves it in screen space. */
+/* The ball's `translate` (set by the pointer push) is in screen space. */
 .sd-orbit-ball { border-radius: 999px; background: var(--c); }
 
-.sd-orbit-dot {
-  position: absolute; left: 50%; top: 50%; width: var(--dot); height: var(--dot); margin: calc(var(--dot) / -2);
-  transform: rotate(var(--a)) translateY(calc(var(--dot) / 2 - var(--size) / 2)) rotate(calc(-1 * var(--a)));
-}
+.sd-orbit.is-on .sd-orbit-x, .sd-orbit.is-on .sd-orbit-y, .sd-orbit.is-on .sd-orbit-face { animation-play-state: running; }
 
-.sd-orbit-spin, .sd-orbit-unspin { animation: sd-orbit-turn var(--spin) linear infinite paused; }
-.sd-orbit-unspin { animation-direction: reverse; }
-.sd-orbit.is-on .sd-orbit-spin, .sd-orbit.is-on .sd-orbit-unspin, .sd-orbit.is-on .sd-orbit-face { animation-play-state: running; }
-
-/* A tap: one extra turn that eases out. The ring and its counter-turn restart in the same frame.
-   The counter-turn has its own keyframes, not `reverse`: reversing also flips the easing, so the two would
-   drift apart mid-turn and the squash would no longer cancel. */
-.sd-orbit.is-kick-a .sd-orbit-kick { animation: sd-orbit-kick-a 1100ms var(--sd-out); }
-.sd-orbit.is-kick-a .sd-orbit-unkick { animation: sd-orbit-unkick-a 1100ms var(--sd-out); }
-.sd-orbit.is-kick-b .sd-orbit-kick { animation: sd-orbit-kick-b 1100ms var(--sd-out); }
-.sd-orbit.is-kick-b .sd-orbit-unkick { animation: sd-orbit-unkick-b 1100ms var(--sd-out); }
-
-@keyframes sd-orbit-turn { to { transform: rotate(360deg); } }
-@keyframes sd-orbit-kick-a { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
-@keyframes sd-orbit-kick-b { from { transform: rotate(-360deg); } to { transform: rotate(0deg); } }
-@keyframes sd-orbit-unkick-a { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
-@keyframes sd-orbit-unkick-b { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes sd-orbit-x { 0%, 100% { translate: -50% 0; } 50% { translate: 50% 0; } }
+@keyframes sd-orbit-y { 0%, 100% { translate: 0 -50%; } 50% { translate: 0 50%; } }
 
 /* Depth: once per turn each dot passes the far side, where it shrinks and fades. Eased both ways, the swing
    follows the dot's depth closely. */
@@ -62,8 +64,9 @@
   50% { scale: 1; opacity: 1; }
 }
 
-/* Reduced motion: the flat ring, still. */
+/* Reduced motion: the flat ring, still. The slides stay paused where each dot sits. */
 @media (prefers-reduced-motion: reduce) {
   .sd-orbit { --k: 1; --tz: 0deg; }
-  .sd-orbit-spin, .sd-orbit-unspin, .sd-orbit-face { animation: none; }
+  .sd-orbit.is-on .sd-orbit-x, .sd-orbit.is-on .sd-orbit-y { animation-play-state: paused; }
+  .sd-orbit-face { animation: none; }
 }
