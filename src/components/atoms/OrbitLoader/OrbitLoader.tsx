@@ -9,9 +9,10 @@ const DOTS = ['#d4b89c', '#e2bc7b', '#eabc62', '#eaa959', '#e25846', '#d54568', 
 const STEP = 360 / DOTS.length;
 const FIRST = STEP / 2;
 
-/** Resting tilt, and how far the pointer can lean it, in degrees. */
-const REST = { x: 50, y: -14 };
-const REACH = { x: 24, y: 40 };
+/** The ring's resting pose and how far the pointer can move it, in degrees: `lean` tips it away from the viewer
+ *  (drawn as a squash, cos of the angle), `turn` rotates the ellipse. REST mirrors --k and --tz in the CSS. */
+const REST = { lean: 50, turn: -10 };
+const REACH = { lean: 24, turn: 24 };
 
 /** The pointer repels the dots like a like magnet: how near it acts and the furthest it pushes, in screen px,
  *  and the burst a tap gives, as a speed in px per frame at the same reach doubled. */
@@ -25,7 +26,7 @@ export interface OrbitLoaderProps {
 }
 
 /**
- * A ring of colour dots orbiting in 3D. The spin is CSS on the compositor, so it keeps turning while the main
+ * A ring of colour dots orbiting in a tilted ellipse, drawn in 2D so every browser keeps the dots round. The spin is CSS on the compositor, so it keeps turning while the main
  * thread is busy sculpting a character. The ring leans toward the pointer, the dots shy away from it on springs,
  * and a tap anywhere scatters them and gives the ring an extra turn.
  */
@@ -86,8 +87,8 @@ export function OrbitLoader({ on }: OrbitLoaderProps) {
       const r = el.getBoundingClientRect();
       const x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (innerWidth / 2)));
       const y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (innerHeight / 2)));
-      el.style.setProperty('--rx', `${REST.x - y * REACH.x}deg`);
-      el.style.setProperty('--ry', `${REST.y + x * REACH.y}deg`);
+      el.style.setProperty('--k', `${Math.cos(((REST.lean - y * REACH.lean) * Math.PI) / 180)}`);
+      el.style.setProperty('--tz', `${REST.turn + x * REACH.turn}deg`);
     };
     // Two classes take turns so each tap restarts the turn.
     let kick = false;
