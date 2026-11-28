@@ -47,6 +47,10 @@ npm test         # checks that every character page can still be wired into the 
 npm run build
 ```
 
+**Get yours** in the studio opens the commission page (`/get-yours.html`). Its form posts each brief to the Apps Script
+in `google/brief-inbox.gs`, which files it in a Google Sheet and emails it. Set `VITE_BRIEF_URL` to that script's web app
+URL (setup steps are at the top of the script); without it the form says it could not send.
+
 ## How it is put together
 
 ```
@@ -56,12 +60,15 @@ src/avatar/              Runtime: mount a character into any element; the charac
 src/styles/tokens.css    Design tokens: colour, radius, elevation, motion, type, touch size.
 src/components/
   atoms/                 Icon, Button, IconButton, Slider, CharacterTile, EmotionKey, Section,
-                         CollapseToggle, Swatch, Tag, Tooltip
+                         CollapseToggle, Swatch, Tag, Tooltip, TextField, CheckTile
   molecules/             Logo, DownloadBar, Rail, CharacterPicker, EmotionPicker, MotionSwitch, SwatchRow
-  organisms/             Stage, MotionPanel, Sidebar, TabBar, BottomSheet, OnboardingCard, AboutOverlay
-  templates/             DesktopStudio, MobileStudio, Onboarding: layout only, no studio state
+  organisms/             Stage, MotionPanel, Sidebar, TabBar, BottomSheet, OnboardingCard, AboutOverlay,
+                         BriefForm, Pitch
+  templates/             DesktopStudio, MobileStudio, Onboarding, GetYours: layout only, no studio state
 src/state/               One reducer for the studio, and the controller both templates receive
 src/pages/Studio.tsx     Owns the state and picks the template at 960px
+src/pages/GetYours.tsx   The commission page; src/brief.ts sends its form
+google/brief-inbox.gs    Apps Script that receives a brief: a Sheet row and an email
 ```
 
 Every component folder holds its `.tsx` and its `.css`. Components only reference tokens, never raw values.
@@ -94,7 +101,3 @@ the runtime watches the character's own emotion state.
 icon-only buttons are labelled; the closed motion panel and sheet are `inert`; 44px hit areas, including the
 small close chips; reduced motion starts the character standing, softens its bounce, and turns UI animation
 off.
-
-## Not done yet
-
-- "Get yours" points at silverdesk.com until the landing page exists (`VITE_GET_YOURS_URL`).

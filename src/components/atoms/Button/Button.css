@@ -43,3 +43,8 @@
 .sd-btn .sd-ico { transition: transform var(--sd-med) var(--sd-out); }
 .sd-btn:hover .sd-ico { transform: rotate(-5deg); }
 .sd-btn:hover .sd-ico--end { transform: translateX(2px); }
+
+/* Disabled drops to a grey fill, never a fade; nothing answers the pointer. */
+.sd-btn:disabled, .sd-btn:disabled:hover { background: var(--sd-selected); color: var(--sd-muted); cursor: default; transform: none; }
+.sd-btn:disabled::after { display: none; }
+.sd-btn:disabled:hover .sd-ico { transform: none; }

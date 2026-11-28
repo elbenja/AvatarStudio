@@ -57,8 +57,11 @@ export interface MountOptions {
   background?: string;
   /** Head room around the character: 1 fits it exactly, larger values leave more air. */
   pad?: number;
-  /** Turn far enough, measured from the camera, that the character faces whichever side of the screen the pointer is on. */
-  wideLean?: boolean;
+  /**
+   * How the character answers the pointer. 'lean' (the default) turns a little toward it; 'face' turns far enough,
+   * measured from the camera, to face whichever side of the screen it is on; 'ignore' never watches it.
+   */
+  pointer?: 'lean' | 'face' | 'ignore';
   /** The first frames are on screen. */
   onReady?: () => void;
   /** The camera was turned, in whole degrees. */

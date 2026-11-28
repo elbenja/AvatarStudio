@@ -86,6 +86,8 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
       // box on the page, so hand them coordinates inside that box, clamped to its edges: the character turns
       // toward the pointer wherever it is, and never past its full turn.
       if (type === 'pointermove') {
+        // Never told where the pointer is, the character keeps looking straight ahead.
+        if (opts.pointer === 'ignore') return;
         const inner = fn;
         fn = ((e: PointerEvent) => {
           const r = el.getBoundingClientRect();
@@ -120,7 +122,7 @@ export function mountAvatar(el: HTMLElement, id: CharacterId, mod: AvatarModule,
       return { V: Math.max(mod.meta.tall * pad, (mod.meta.wide * host.h) / host.w), panel: 0 };
     },
     lean(x) {
-      if (!opts.wideLean || !host.api) return x * LEAN;
+      if (opts.pointer !== 'face' || !host.api) return x * LEAN;
       // With the camera off to one side, the pages' small turn only reaches one side of the screen.
       // Reach past the camera's angle on the far side, so left and right mirror each other on screen.
       const az = Math.min(Math.max(host.api.controls.getAzimuthalAngle(), -Math.PI / 2), Math.PI / 2);
