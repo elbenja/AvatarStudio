@@ -3,6 +3,7 @@ import type { StudioTemplateProps } from '../../../state/controller';
 import { GET_YOURS_URL } from '../../../config';
 import { Button } from '../../atoms/Button/Button';
 import { Section } from '../../atoms/Section/Section';
+import { Sweep } from '../../atoms/Sweep/Sweep';
 import { Logo } from '../../molecules/Logo/Logo';
 import { CharacterPicker } from '../../molecules/CharacterPicker/CharacterPicker';
 import { DownloadBar } from '../../molecules/DownloadBar/DownloadBar';
@@ -58,8 +59,10 @@ export function MobileStudio({ state, character, actions, downloads, live }: Stu
       </div>
 
       <div className={'sd-phone-stage' + lift}>
-        <Stage {...state} live={live} pad={1.1} onTurn={actions.setTurn} onMood={actions.setMood} />
+        <Stage {...state} live={live} pad={1.1} sweep={false} onTurn={actions.setTurn} onMood={actions.setMood} />
       </div>
+      {/* The stage is inset and steps back under a sheet, so the glint sweeps the whole screen from here, behind the cards. */}
+      <Sweep trigger={state.who} />
 
       {/* About (bottom-left) and Voice (centre) float over the stage above the tabs; they step aside while a sheet is open. */}
       <div className={'sd-phone-float sd-phone-rail' + (open ? ' is-hidden' : '')} inert={open !== null}>
