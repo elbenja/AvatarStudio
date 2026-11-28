@@ -2,24 +2,41 @@
 
 **Your brand deserves a face. Preferably a fluffy one.**
 
-Avatar Studio is a Silverdesk Lab side project: part playground, part proof. It started as an excuse to
-experiment, build and ship something fun in Three.js, and it doubles as the shop window for a real service:
-**custom 3D characters for brands that need some personality.**
+**Live at [avatarstudio.silverdesk.com](https://avatarstudio.silverdesk.com)**
 
-Most brand mascots today are a grey circle, a stock 3D blob, or something a generator spat out in five
-seconds. That's slop, and people can tell. The antidote is a character with a point of view: sculpted on
-purpose, with details that only make sense for *your* brand, alive in the browser instead of frozen in a PNG.
+## The goal
 
-## The service
+Avatar Studio started as a Silverdesk Lab experiment: a reason to build and ship something fun in Three.js,
+and a place to show what design engineering looks like when one person does both the design and the code.
+It got out of hand. Now it is also the shop window for a real service: **custom 3D characters for brands that
+need some personality.**
 
-1. **Tell us about the brand.** The vibe, the colours, the weird details that make it yours.
-2. **We sculpt the character in code.** No 3D files, no textures: every shape is math, rigged, with a pose
-   and a motion for each of 8 emotions and 2 moves (idle, plus walk, skate, whatever fits).
-3. **You get it in about a week.** One self-contained HTML file, transparent PNGs of every emotion, and an
-   embed for your site, app, chatbot or voice agent.
+Most brand mascots today are a grey circle, a stock 3D blob, or something a generator made in five seconds.
+That's slop, and people can tell. The fix is a character with a point of view: sculpted on purpose, with
+details that only make sense for *your* brand, and alive in the browser instead of stuck in a PNG.
 
-When the designer also writes the code, the vision doesn't get lost in the handoff. No templates, no
-dress-up menus.
+## The product: one custom character, one fixed price
+
+Avatar Studio sells one thing, the same way every time: a custom 3D character for your brand, at a fixed scope, price and timeline.
+
+| | |
+| --- | --- |
+| **What you get** | A custom character sculpted in code, with 8 emotions and 2 moves |
+| **Files** | An HTML embed for your site, app or chatbot, plus transparent PNGs of every emotion |
+| **Revisions** | 2 rounds on the character image, 2 on the 3D |
+| **Timeline** | About 1 week |
+| **Price** | **$900** founding offer for the first 5 brands, then **$1,200** |
+
+**How it works**
+
+1. **Send the brief.** Hit **Get yours**, say where the character will live (website, app, social) and describe
+   the vibe, the colours and the weird details that make your brand yours. It takes two short steps.
+2. **Get a first sketch in 48 hours.** It's free, with no strings attached, so you can see the direction before you commit.
+3. **We sculpt it in code.** No 3D files and no textures: every shape is math, rigged with a pose and a motion
+   for each emotion and move.
+4. **It ships in about a week.** You get one self-contained HTML file and the PNGs, ready to drop in.
+
+The designer also writes the code, so nothing gets lost in a handoff. There are no templates and no dress-up menus.
 
 ## The studio
 
@@ -36,7 +53,20 @@ Pick one, give it one of 8 emotions (Happy, Euphoric, Surprised, Curious, Sleepy
 make it walk or skate, tune speed, bounce and turn, then take it home as a transparent PNG or a single HTML
 file. Drag to spin, tap to hop.
 
-Want one for your brand? Hit **Get yours** in the studio, or go to [silverdesk.com](https://silverdesk.com).
+Want one for your brand? Hit **Get yours** in the studio. It opens a two-step brief beside a live character,
+and the brief lands straight in our inbox. You can also go to [silverdesk.com](https://silverdesk.com).
+
+## Coming soon: talk to it
+
+The next step is **AI chat**: a character that talks, listens and reacts, with its emotions following the
+conversation. The studio already has a **Start Voice** button (marked *Soon*) that previews it with the talking
+bear, and the brief lists **Voice AI** as a place a character can live, shown but not yet pickable. Both will
+go live together.
+
+## Hosting
+
+The site is deployed on Vercel and served at `avatarstudio.silverdesk.com` through a CNAME at
+GoDaddy. It sits on its own subdomain so it stands as a product, apart from the main silverdesk.com site.
 
 ## Run it
 
@@ -59,9 +89,10 @@ vite/avatar-source.ts    Turns each page into a mountable module at build time.
 src/avatar/              Runtime: mount a character into any element; the character catalog.
 src/styles/tokens.css    Design tokens: colour, radius, elevation, motion, type, touch size.
 src/components/
-  atoms/                 Icon, Button, IconButton, Slider, CharacterTile, EmotionKey, Section,
-                         CollapseToggle, Swatch, Tag, Tooltip, TextField, CheckTile
-  molecules/             Logo, DownloadBar, Rail, CharacterPicker, EmotionPicker, MotionSwitch, SwatchRow
+  atoms/                 Icon, Button, IconButton, Badge, Slider, CharacterTile, EmotionKey, Section,
+                         CollapseToggle, Swatch, Tag, Tooltip, TextField, CheckTile, OrbitLoader, Sweep
+  molecules/             Logo, DownloadBar, Rail, CharacterPicker, EmotionPicker, MotionSwitch, SwatchRow,
+                         Popover, StartVoice
   organisms/             Stage, MotionPanel, Sidebar, TabBar, BottomSheet, OnboardingCard, AboutOverlay,
                          BriefForm, Pitch
   templates/             DesktopStudio, MobileStudio, Onboarding, GetYours: layout only, no studio state
